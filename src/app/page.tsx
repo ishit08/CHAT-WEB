@@ -578,7 +578,7 @@ export default function Home() {
                 <div className="ml-auto flex items-center bg-white rounded-lg shadow-sm px-3 py-1 gap-2 border border-gray-200" style={{ minWidth: 140 }}>
                   <Image src="/Logo2.svg" alt="Periskope Logo" width={22} height={22} className="rounded-full" />
                   <span className="font-bold text-base text-black">Periskope</span>
-                  <HiChevronUpDown className="text-gray-400 ml-15" size={16} />
+                  <HiChevronUpDown className="text-gray-400 ml-4" size={16} />
                 </div>
               </div>
             </form>
