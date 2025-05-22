@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { FiSearch, FiSettings, FiLogOut, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
@@ -39,6 +39,8 @@ import { RiChatAiLine } from 'react-icons/ri';
 import { BsCheckAll } from "react-icons/bs";
 import { FaPhoneAlt } from "react-icons/fa";
 import { IoPersonCircle } from "react-icons/io5";
+import { HiSparkles } from "react-icons/hi";
+import { IoPersonCircleSharp } from "react-icons/io5";
 
 type Chat = {
   id: string;
@@ -53,6 +55,11 @@ type Message = {
   content: string;
   sender_id: string;
   created_at: string;
+  attachment?: {
+    name: string;
+    type: string;
+    url: string;
+  };
 };
 
 type User = {
@@ -80,7 +87,7 @@ const DEMO_CONTACTS: Chat[] = [
   },
   {
     id: "+91-9999999999",
-    name: "+91 9999999999t",
+    name: "+91 9999999999",
     lastMessage: "Hi there, I'm Swapnika, Co-Founder of ...",
     lastMessageTime: "25-Feb-25",
     avatarUrl: "/Logo2.svg",
@@ -177,6 +184,14 @@ const DEMO_MESSAGES: Record<string, Message[]> = {
       created_at: new Date().toISOString(),
     },
   ],
+  "Skope-Demo": [
+    {
+      id: "1",
+      content: "Test Demo15",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+  ],
 };
 
 // Add group chat IDs for easy checking
@@ -215,6 +230,18 @@ const CHAT_PHONES: Record<string, string> = {
   "demo-demo15": "+91 92896 65999",
 };
 
+// Hardcoded messages for Test-El-Centro
+const TEST_EL_CENTRO_MESSAGES = [
+  { id: '1', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'CVFER', time: '11:51', date: '23-10-2024', side: 'left' },
+  { id: '2', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'CDERT', time: '11:54', date: '23-10-2024', side: 'left' },
+  { id: '4', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'Hello, South Euna!', time: '08:01', date: '22-01-2025', side: 'left' },
+  { id: '5', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'Hello, Livonia!', time: '08:10', date: '23-01-2025', side: 'left' },
+  { id: '3', sender: 'Periskope', phone: '+91 99718 44008', content: 'hello', time: '08:00', date: '23-01-2025', side: 'right', email: 'bharat@hashlabs.dev' },
+  { id: '6', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'CVFER', time: '11:51', date: '23-01-2025', side: 'left' },
+  { id: '7', sender: 'Periskope', phone: '+91 99718 44008', content: 'test el centro', time: '09:49', date: '23-01-2025', side: 'right', email: 'bharat@hashlabs.dev' },
+  { id: '8', sender: 'Periskope', phone: '+91 99718 44008', content: 'testing', time: '09:49', date: '23-01-2025', side: 'right', email: 'bharat@hashlabs.dev' },
+];
+
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -226,6 +253,10 @@ export default function Home() {
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [demoMessages, setDemoMessages] = useState<Record<string, Message[]>>(DEMO_MESSAGES);
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -286,14 +317,24 @@ export default function Home() {
       return;
     }
 
-    // For each chat, get the other user's name
+    // For each chat, get the other user's name and last message
     const chatPromises = (data || []).map(async (item: { chat_id: string }) => {
       const name = await getOtherUserName(item.chat_id, userId);
+      
+      // Fetch the last message for this chat
+      const { data: lastMessageData } = await supabase
+        .from("messages")
+        .select("content, created_at")
+        .eq("chat_id", item.chat_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
       return {
         id: item.chat_id,
         name,
-        lastMessage: "Loading...",
-        lastMessageTime: "",
+        lastMessage: lastMessageData?.content || "No messages yet",
+        lastMessageTime: lastMessageData?.created_at ? new Date(lastMessageData.created_at).toLocaleDateString() : "",
         avatarUrl: (await getOtherUserAvatar(item.chat_id, userId)) || undefined,
       };
     });
@@ -334,8 +375,8 @@ export default function Home() {
   };
 
   const fetchMessages = async (chatId: string) => {
-    if (chatId.startsWith("demo-")) {
-      setMessages(DEMO_MESSAGES[chatId] || []);
+    if (chatId.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === chatId)) {
+      setMessages(demoMessages[chatId] || []);
       return;
     }
     const { data, error } = await supabase
@@ -352,33 +393,101 @@ export default function Home() {
 
   useEffect(() => {
     if (selectedChat) {
-      fetchMessages(selectedChat);
-      // Subscribe to new messages
-      const subscription = supabase
-        .channel(`chat:${selectedChat}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${selectedChat}` }, (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-        })
-        .subscribe();
-      return () => {
-        subscription.unsubscribe();
-      };
+      if (selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
+        setMessages(demoMessages[selectedChat] || []);
+      } else {
+        fetchMessages(selectedChat);
+        // Subscribe to new messages
+        const subscription = supabase
+          .channel(`chat:${selectedChat}`)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `chat_id=eq.${selectedChat}` }, (payload) => {
+            setMessages((prev) => [...prev, payload.new as Message]);
+          })
+          .subscribe();
+        return () => {
+          subscription.unsubscribe();
+        };
+      }
     }
+  }, [selectedChat, demoMessages]);
+
+  // Remove the polling mechanism since we're handling demo messages differently
+  useEffect(() => {
+    if (!selectedChat || selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) return;
+    const interval = setInterval(() => {
+      fetchMessages(selectedChat);
+    }, 2000); // Poll every 2 seconds
+    return () => clearInterval(interval);
   }, [selectedChat]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachment(file);
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedChat || !currentUserId) return;
-    const { error } = await supabase.from("messages").insert({
-      chat_id: selectedChat,
-      sender_id: currentUserId,
-      content: newMessage,
-    });
-    if (error) {
-      console.error("Error sending message:", error);
-    } else {
-      setNewMessage("");
+    if ((!newMessage.trim() && !attachment) || !selectedChat || !currentUserId) return;
+
+    let attachmentUrl = '';
+    if (attachment) {
+      // For demo purposes, we'll create a fake URL
+      attachmentUrl = URL.createObjectURL(attachment);
     }
+
+    if (selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
+      // Handle demo chat messages
+      const newDemoMessage: Message = {
+        id: Date.now().toString(),
+        content: newMessage,
+        sender_id: currentUserId,
+        created_at: new Date().toISOString(),
+        ...(attachment && {
+          attachment: {
+            name: attachment.name,
+            type: attachment.type,
+            url: attachmentUrl
+          }
+        })
+      };
+
+      setDemoMessages(prev => ({
+        ...prev,
+        [selectedChat]: [...(prev[selectedChat] || []), newDemoMessage]
+      }));
+
+      // Update the last message in the chat list
+      setChats(prev => prev.map(chat => {
+        if (chat.id === selectedChat) {
+          return {
+            ...chat,
+            lastMessage: attachment ? `📎 ${attachment.name}` : newMessage,
+            lastMessageTime: new Date().toLocaleDateString()
+          };
+        }
+        return chat;
+      }));
+    } else {
+      // Handle real chat messages
+      const { error } = await supabase.from("messages").insert({
+        chat_id: selectedChat,
+        sender_id: currentUserId,
+        content: newMessage,
+        attachment: attachment ? {
+          name: attachment.name,
+          type: attachment.type,
+          url: attachmentUrl
+        } : null
+      });
+      if (error) {
+        console.error("Error sending message:", error);
+        return;
+      }
+    }
+    setNewMessage("");
+    setAttachment(null);
   };
 
   const fetchUsers = async () => {
@@ -458,6 +567,13 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNewChatModal, currentUserId]);
 
+  // Auto-scroll to bottom when messages or selectedChat change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, selectedChat]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -467,7 +583,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f0f2f5] flex">
+    <div className="h-screen w-full bg-[#f0f2f5] flex">
       {/* Pixel-perfect Vertical Sidebar */}
       <nav className="h-screen w-14 bg-[#f7f7f7] border-r border-gray-200 flex flex-col items-center pt-2 pb-2 select-none">
         {/* Logo */}
@@ -531,7 +647,7 @@ export default function Home() {
     
       </nav>
       {/* Main content area (right side) */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full min-h-0">
         {/* Top Bar */}
         <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center justify-between z-30 px-6">
           <div className="flex items-center gap-2">
@@ -711,7 +827,7 @@ export default function Home() {
             </div>
           </aside>
           {/* Main chat area */}
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col h-full min-h-0">
             {/* Chat header */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
               <div className="flex items-center gap-1">
@@ -722,34 +838,104 @@ export default function Home() {
                   <div className="font-semibold text-sm text-gray-900 leading-tight">
                     {selectedChat ? chats.find(c => c.id === selectedChat)?.name : "Select a chat"}
                   </div>
-                  <div className="text-xs text-gray-500 leading-none">Online</div>
+                  <div className="text-xs text-gray-500 leading-none">
+                    {selectedChat === "Test-El-Centro"
+                      ? "Roshnag Airtel, Roshnag Jio, Bharat Kumar Ramesh, Periskope"
+                      : "Online"}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                {selectedChat && GROUP_CHAT_IDS.includes(selectedChat) && (
+                  <div className="flex items-center -space-x-3 mr-2">
+                    {[0,1,2,3,4].map((i) => (
+                      <IoPersonCircleSharp key={i} size={28} className="text-gray-300 bg-white rounded-full border-2 border-white" style={{ zIndex: 10 - i }} />
+                    ))}
+                    <span className="ml-2 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 border border-white" style={{zIndex: 0}}>+3</span>
+                  </div>
+                )}
+                <button className="text-gray-400 hover:text-green-500"><HiSparkles size={20} /></button>
                 <button className="text-gray-400 hover:text-green-500"><FiSearch size={16} /></button>
-                <button className="text-gray-400 hover:text-green-500"><FiSettings size={16} /></button>
-                <button className="text-gray-400 hover:text-green-500"><FiLogOut size={16} /></button>
               </div>
             </div>
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-8 py-6 bg-[#ece5dd] flex flex-col gap-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
-                >
-                  <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
-                    {message.content}
+            <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6 bg-[#ece5dd] flex flex-col gap-1">
+              {selectedChat === 'Test-El-Centro' ? (
+                (() => {
+                  let lastDate = '';
+                  return [
+                    ...TEST_EL_CENTRO_MESSAGES.map((message, idx) => {
+                      const showDate = message.date !== lastDate;
+                      lastDate = message.date;
+                      return (
+                        <div key={message.id + message.time}>
+                          {showDate && (
+                            <div className="text-center text-[10px] text-gray-400 font-semibold my-1">{message.date}</div>
+                          )}
+                          <div className={`flex ${message.side === 'right' ? 'justify-end' : 'justify-start'}`}> 
+                            <div className={`max-w-[60%] ${message.side === 'right' ? 'self-end' : 'self-start'}`}> 
+                              <div className={`rounded-lg px-2 py-1 shadow text-gray-900 text-xs ${message.side === 'right' ? 'bg-green-100' : 'bg-white'}`}> 
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-bold text-green-600 text-[10px]">{message.sender}</span>
+                                  <span className="text-[10px] text-gray-400 font-semibold">{message.phone}</span>
+                                </div>
+                                <div className="flex items-end justify-between w-full">
+                                  <div>{message.content}</div>
+                                  <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">{message.time}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }),
+                    <div key="messages-end" ref={messagesEndRef} />
+                  ];
+                })()
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
+                  >
+                    <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
+                      {message.attachment && (
+                        <div className="mb-2">
+                          <a
+                            href={message.attachment.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                          >
+                            <FiPaperclip size={16} />
+                            <span className="text-sm">{message.attachment.name}</span>
+                          </a>
+                        </div>
+                      )}
+                      {message.content}
+                    </div>
+                    <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
                   </div>
-                  <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
-                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             {/* Message input */}
             <form onSubmit={handleSendMessage} className="flex flex-col gap-0 px-0 pt-4 pb-4 bg-white border-t border-gray-200">
               <div className="flex items-center w-full px-7 mb-4 relative">
+                {attachment && (
+                  <div className="absolute bottom-full left-7 mb-2 bg-gray-100 rounded-lg p-2 flex items-center gap-2">
+                    <span className="text-sm text-gray-600">{attachment.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachment(null)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                )}
                 <input
                   className="flex-1 bg-transparent pt-0 pb-2 outline-none text-gray-800 border-none text-base font-bold leading-tight placeholder:font-bold placeholder:text-gray-400 placeholder:leading-tight"
                   placeholder="Message..."
@@ -763,7 +949,19 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-6 mt-0 px-7">
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FiPaperclip size={22} /></button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <button 
+                  type="button" 
+                  className="text-[#434B57] hover:text-green-600 focus:outline-none"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FiPaperclip size={22} />
+                </button>
                 <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FaRegSmile size={22} /></button>
                 <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FiClock size={22} /></button>
                 <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><AiOutlineHistory size={22} /></button>
@@ -779,7 +977,7 @@ export default function Home() {
             </form>
           </main>
           {/* Right Sidebar */}
-          <aside className="w-14 bg-white border-l border-gray-200 flex flex-col items-center py-4 gap-2mak">
+          <aside className="w-14 bg-white border-l border-gray-200 flex flex-col items-center py-4 gap-2">
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
               <TbSquareChevronLeft size={18} />
             </button>
