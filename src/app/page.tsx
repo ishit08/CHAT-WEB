@@ -18,6 +18,8 @@ import { MdChecklist } from "react-icons/md";
 import { IoIosSettings } from "react-icons/io";
 import { TbStarsFilled } from "react-icons/tb";
 import { LuSquareChevronRight } from "react-icons/lu";
+import { HiFolderArrowDown } from "react-icons/hi2";
+import { IoFilterSharp } from "react-icons/io5";
 
 type Chat = {
   id: string;
@@ -343,176 +345,194 @@ export default function Home() {
         <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500">
           <LuSquareChevronRight size={18} />
         </button>
-  
+    
       </nav>
-      {/* Sidebar */}
-      <aside className="w-[340px] bg-white border-r border-gray-200 flex flex-col">
-        {/* Top section: Logo and nav */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      {/* Main content area (right side) */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Bar */}
+        <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center justify-between z-30 px-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg">P</div>
-            <span className="font-bold text-lg text-gray-800">chats</span>
+            <BsChatDotsFill className="w-5 h-5 text-gray-400" />
+            <span className="font-bold text-lg text-gray-400">chats</span>
           </div>
-          <button className="text-gray-400 hover:text-green-500">
-            <FiSettings size={22} />
-          </button>
-        </div>
-        {/* Search/filter */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 bg-[#f6f6f6]">
-          <button className="text-gray-400">
-            <FiSearch size={20} />
-          </button>
-          <input
-            className="flex-1 bg-transparent outline-none text-sm text-gray-700"
-            placeholder="Search or start new chat"
-            onClick={() => setShowNewChatModal(true)}
-          />
-          <button 
-            className="text-gray-400 hover:text-green-500"
-            onClick={() => setShowNewChatModal(true)}
-          >
-            <FiMessageSquare size={20} />
-          </button>
-        </div>
-
-        {/* New Chat Modal */}
-        {showNewChatModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg w-[400px] max-h-[600px] flex flex-col">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h2 className="text-xl font-semibold">New Chat</h2>
-                <button 
-                  onClick={() => setShowNewChatModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <FiX size={24} />
-                </button>
-              </div>
-              <div className="p-4 border-b">
-                <input
-                  type="text"
-                  placeholder="Search users..."
-                  className="w-full px-4 py-2 border rounded-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {users
-                  .filter(user => 
-                    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    user.email.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                  .map(user => (
-                    <div
-                      key={user.id}
-                      className="p-4 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-                      onClick={() => createNewChat(user.id)}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        {user.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Chat list */}
-        <div className="flex-1 overflow-y-auto">
-          {chats.map((chat) => (
-            <div
-              key={chat.id}
-              className={`flex items-center gap-3 px-4 py-3 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
-              onClick={() => setSelectedChat(chat.id)}
-            >
-              {/* Avatar: show profile image if available, else fallback to initial */}
-              {chat.avatarUrl ? (
-                <img
-                  src={chat.avatarUrl}
-                  alt={chat.name}
-                  className="w-12 h-12 rounded-full object-cover bg-gray-200"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
-                  {chat.name.charAt(0)}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-900 truncate">{chat.name}</span>
-                  <span className="text-xs text-gray-400">{chat.lastMessageTime}</span>
-                </div>
-                <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Bottom nav */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-[#f6f6f6]">
-          <div className="flex gap-4">
-            <button className="text-gray-400 hover:text-green-500"><FiUsers size={22} /></button>
-            <button className="text-gray-400 hover:text-green-500"><FiMessageSquare size={22} /></button>
-          </div>
-          <button className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">U</button>
-        </div>
-      </aside>
-      {/* Main chat area */}
-      <main className="flex-1 flex flex-col h-screen">
-        {/* Chat header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
-              {selectedChat ? chats.find(c => c.id === selectedChat)?.name.charAt(0) : "?"}
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">
-                {selectedChat ? chats.find(c => c.id === selectedChat)?.name : "Select a chat"}
-              </div>
-              <div className="text-xs text-gray-500">Online</div>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <button className="text-gray-400 hover:text-green-500"><FiSearch size={20} /></button>
-            <button className="text-gray-400 hover:text-green-500"><FiSettings size={20} /></button>
-            <button className="text-gray-400 hover:text-green-500"><FiLogOut size={20} /></button>
+            {/* Placeholder for right controls */}
+            <button className="text-gray-400 hover:text-gray-600"><FiSearch size={20} /></button>
+            <button className="text-gray-400 hover:text-gray-600"><FiSettings size={20} /></button>
+            <button className="text-gray-400 hover:text-gray-600"><FiLogOut size={20} /></button>
           </div>
         </div>
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 bg-[#ece5dd] flex flex-col gap-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
-            >
-              <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
-                {message.content}
+        <div className="flex flex-1 w-full h-[calc(100vh-3rem)]">
+          {/* Sidebar */}
+          <aside className="w-[360px] bg-white flex flex-col relative">
+            {/* Filter/Search Bar Section */}
+            <div className="flex items-center justify-between px-3 py-3 bg-white border-b border-gray-100 text-xs border-r border-gray-200">
+              {/* Left: Custom filter and Save */}
+              <div className="flex items-center gap-x-1">
+                <button className="flex items-center gap-1 text-green-600 font-semibold bg-white px-1 py-0.5 rounded border border-transparent text-xs">
+                  <HiFolderArrowDown className="w-3 h-3 text-green-600" />
+                  Custom filter
+                </button>
+                <button className="bg-white border border-gray-300 px-1 py-0.5 rounded text-gray-700 text-xs shadow-sm">Save</button>
               </div>
-              <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
-                {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {/* Right: Search and Filtered */}
+              <div className="flex items-center gap-x-2">
+                <div className="flex items-center bg-white border border-gray-300 px-1 py-0.5 rounded gap-x-1">
+                  <svg width="8" height="8" fill="none" viewBox="0 0 24 24" className="w-2 h-2 text-gray-700"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <input className="bg-transparent outline-none text-xs text-gray-700 placeholder-gray-700 w-10" placeholder="Search" onClick={() => setShowNewChatModal(true)} />
+                </div>
+                <div className="relative bg-white border border-gray-300 px-1 py-0.5 rounded flex items-center ml-1">
+                  <button className="flex items-center gap-1 text-green-600 font-semibold bg-white border-none p-0 text-xs">
+                    <IoFilterSharp className="w-2.5 h-2.5 text-green-600" />
+                    Filtered
+                  </button>
+                  <span className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center bg-green-200 rounded-full text-[10px] text-green-700 cursor-pointer border border-white">×</span>
+                </div>
               </div>
             </div>
-          ))}
+            {/* Search/filter */}
+   
+
+            {/* New Chat Modal */}
+            {showNewChatModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg w-[400px] max-h-[600px] flex flex-col">
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-xl font-semibold">New Chat</h2>
+                    <button 
+                      onClick={() => setShowNewChatModal(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <FiX size={24} />
+                    </button>
+                  </div>
+                  <div className="p-4 border-b">
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      className="w-full px-4 py-2 border rounded-lg"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    {users
+                      .filter(user => 
+                        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                      )
+                      .map(user => (
+                        <div
+                          key={user.id}
+                          className="p-4 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
+                          onClick={() => createNewChat(user.id)}
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-medium">{user.name}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chat list */}
+            <div className="flex-1 overflow-y-auto border-r border-gray-200">
+              {chats.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={`flex items-center gap-3 px-4 py-3 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
+                  onClick={() => setSelectedChat(chat.id)}
+                >
+                  {/* Avatar: show profile image if available, else fallback to initial */}
+                  {chat.avatarUrl ? (
+                    <img
+                      src={chat.avatarUrl}
+                      alt={chat.name}
+                      className="w-12 h-12 rounded-full object-cover bg-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
+                      {chat.name.charAt(0)}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-900 truncate">{chat.name}</span>
+                      <span className="text-xs text-gray-400">{chat.lastMessageTime}</span>
+                    </div>
+                    <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Bottom nav */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-[#f6f6f6]">
+              <div className="flex gap-4">
+                <button className="text-gray-400 hover:text-green-500"><FiUsers size={22} /></button>
+                <button className="text-gray-400 hover:text-green-500"><FiMessageSquare size={22} /></button>
+              </div>
+              <button className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">U</button>
+            </div>
+          </aside>
+          {/* Main chat area */}
+          <main className="flex-1 flex flex-col">
+            {/* Chat header */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
+              <div className="flex items-center gap-1">
+                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">
+                  {selectedChat ? chats.find(c => c.id === selectedChat)?.name.charAt(0) : "?"}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm text-gray-900 leading-tight">
+                    {selectedChat ? chats.find(c => c.id === selectedChat)?.name : "Select a chat"}
+                  </div>
+                  <div className="text-xs text-gray-500 leading-none">Online</div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button className="text-gray-400 hover:text-green-500"><FiSearch size={16} /></button>
+                <button className="text-gray-400 hover:text-green-500"><FiSettings size={16} /></button>
+                <button className="text-gray-400 hover:text-green-500"><FiLogOut size={16} /></button>
+              </div>
+            </div>
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto px-8 py-6 bg-[#ece5dd] flex flex-col gap-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
+                >
+                  <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
+                    {message.content}
+                  </div>
+                  <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
+                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Message input */}
+            <form onSubmit={handleSendMessage} className="flex items-center gap-4 px-6 py-4 bg-white border-t border-gray-200">
+              <button type="button" className="text-gray-400 hover:text-green-500"><FaRegSmile size={22} /></button>
+              <input
+                className="flex-1 bg-[#f6f6f6] rounded-full px-4 py-2 outline-none text-gray-800"
+                placeholder="Message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+              />
+              <button type="submit" className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 flex items-center justify-center">
+                <IoMdSend size={22} />
+              </button>
+            </form>
+          </main>
         </div>
-        {/* Message input */}
-        <form onSubmit={handleSendMessage} className="flex items-center gap-4 px-6 py-4 bg-white border-t border-gray-200">
-          <button type="button" className="text-gray-400 hover:text-green-500"><FaRegSmile size={22} /></button>
-          <input
-            className="flex-1 bg-[#f6f6f6] rounded-full px-4 py-2 outline-none text-gray-800"
-            placeholder="Message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-          <button type="submit" className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 flex items-center justify-center">
-            <IoMdSend size={22} />
-          </button>
-        </form>
-      </main>
+      </div>
     </div>
   );
 }
