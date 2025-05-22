@@ -74,6 +74,7 @@ export default function Home() {
       }
     };
     handleAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   // Helper to get the other user's name for 1-1 chats
@@ -245,6 +246,7 @@ export default function Home() {
     if (showNewChatModal && currentUserId) {
       fetchUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNewChatModal, currentUserId]);
 
   if (loading) {
