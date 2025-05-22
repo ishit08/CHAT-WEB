@@ -16,10 +16,10 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     setMessage("");
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      (typeof window !== "undefined" && window.location.origin) ||
-      "http://localhost:3000";
+    const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
+    const siteUrl = isLocalhost
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL;
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
