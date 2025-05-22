@@ -204,7 +204,7 @@ export default function Home() {
       chatCounts[item.chat_id] = (chatCounts[item.chat_id] || 0) + 1;
     });
     // Find a chat with exactly 2 members (1-1 chat)
-    const existingChatId = Object.entries(chatCounts).find(([_, count]) => count === 2)?.[0];
+    const existingChatId = Object.entries(chatCounts).find(([, count]) => count === 2)?.[0];
     if (existingChatId) {
       setSelectedChat(existingChatId);
       setShowNewChatModal(false);

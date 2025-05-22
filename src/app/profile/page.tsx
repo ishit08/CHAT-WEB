@@ -19,7 +19,7 @@ export default function ProfilePage() {
         router.push("/login");
         return;
       }
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("users")
         .select("name, phone_number")
         .eq("id", user.id)
