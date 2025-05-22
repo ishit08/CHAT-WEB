@@ -8,7 +8,6 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
 
@@ -39,8 +38,6 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setMessage("");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setError("User not found. Please log in again.");

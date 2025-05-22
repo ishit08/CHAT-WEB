@@ -12,7 +12,6 @@ import { IoTicket } from "react-icons/io5";
 import { FaChartLine, FaListUl } from "react-icons/fa6";
 import { HiMegaphone } from "react-icons/hi2";
 import { LuNetwork } from "react-icons/lu";
-import { MdOutlineAutoAwesome, MdOutlineMenuBook, MdOutlineImage, MdOutlineTaskAlt, MdOutlineSettings } from "react-icons/md";
 import { BsStars } from "react-icons/bs";
 import { RiContactsBookFill, RiFolderImageFill } from "react-icons/ri";
 import { MdChecklist } from "react-icons/md";
@@ -87,8 +86,17 @@ export default function Home() {
       console.error("Error fetching chat members:", error);
       return "Chat";
     }
-    const other = (members as any[]).find((m) => m.user_id !== currentUserId);
-    return other?.users?.name || "Chat";
+    const membersArr = members as Array<{ user_id: string; users: { name: string } | { name: string }[] }>;
+    const other = membersArr.find((m) => m.user_id !== currentUserId);
+    let otherName = "Chat";
+    if (other) {
+      if (Array.isArray(other.users)) {
+        otherName = other.users[0]?.name || "Chat";
+      } else {
+        otherName = other.users?.name || "Chat";
+      }
+    }
+    return otherName;
   };
 
   const fetchChats = async (userId: string) => {
@@ -103,7 +111,7 @@ export default function Home() {
     }
 
     // For each chat, get the other user's name
-    const chatPromises = (data || []).map(async (item: any) => {
+    const chatPromises = (data || []).map(async (item: { chat_id: string }) => {
       const name = await getOtherUserName(item.chat_id, userId);
       return {
         id: item.chat_id,
@@ -191,7 +199,7 @@ export default function Home() {
 
     // Count members in each chat_id
     const chatCounts: Record<string, number> = {};
-    (existingChats || []).forEach((item: any) => {
+    (existingChats || []).forEach((item: { chat_id: string }) => {
       chatCounts[item.chat_id] = (chatCounts[item.chat_id] || 0) + 1;
     });
     // Find a chat with exactly 2 members (1-1 chat)
