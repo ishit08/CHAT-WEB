@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX, FiRefreshCw, FiHelpCircle, FiDownload, FiVolumeX, FiList } from "react-icons/fi";
+import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX, FiRefreshCw, FiHelpCircle, FiDownload, FiVolumeX, FiList, FiPaperclip, FiClock, FiMic, FiMoon } from "react-icons/fi";
 import { FaRegSmile } from "react-icons/fa";
 import { IoMdSend, IoMdArrowDropdown } from "react-icons/io";
 import { AiFillHome } from "react-icons/ai";
@@ -30,6 +30,12 @@ import { VscListSelection } from "react-icons/vsc";
 import { RiListCheck2, RiListSettingsLine } from "react-icons/ri";
 import { DiHtml5Connectivity } from "react-icons/di";
 import { MdGroups } from "react-icons/md";
+import { IoSend } from "react-icons/io5";
+import { AiOutlineHistory } from "react-icons/ai";
+import { HiOutlineSparkles } from "react-icons/hi";
+import { RiBarChartBoxFill } from "react-icons/ri";
+import { FaMicrophone } from "react-icons/fa";
+import Image from "next/image";
 
 type Chat = {
   id: string;
@@ -547,17 +553,34 @@ export default function Home() {
               ))}
             </div>
             {/* Message input */}
-            <form onSubmit={handleSendMessage} className="flex items-center gap-4 px-6 py-4 bg-white border-t border-gray-200">
-              <button type="button" className="text-gray-400 hover:text-green-500"><FaRegSmile size={22} /></button>
-              <input
-                className="flex-1 bg-[#f6f6f6] rounded-full px-4 py-2 outline-none text-gray-800"
-                placeholder="Message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button type="submit" className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 flex items-center justify-center">
-                <IoMdSend size={22} />
-              </button>
+            <form onSubmit={handleSendMessage} className="flex flex-col gap-0 px-0 pt-4 pb-4 bg-white border-t border-gray-200">
+              <div className="flex items-center w-full px-7 mb-4 relative">
+                <input
+                  className="flex-1 bg-transparent pt-0 pb-2 outline-none text-gray-800 border-none text-base font-bold leading-tight placeholder:font-bold placeholder:text-gray-400 placeholder:leading-tight"
+                  placeholder="Message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                />
+                <div className="flex flex-col items-center ml-2">
+                  <button type="submit" className="p-0 m-0 bg-transparent rounded-none shadow-none flex items-center justify-center">
+                    <IoSend size={28} color="#199455" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 mt-0 px-7">
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FiPaperclip size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FaRegSmile size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FiClock size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><AiOutlineHistory size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><HiOutlineSparkles size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><RiBarChartBoxFill size={22} /></button>
+                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FaMicrophone size={18} /></button>
+                <div className="ml-auto flex items-center bg-white rounded-lg shadow-sm px-3 py-1 gap-2 border border-gray-200" style={{ minWidth: 140 }}>
+                  <Image src="/Logo2.svg" alt="Periskope Logo" width={22} height={22} className="rounded-full" />
+                  <span className="font-bold text-base text-black">Periskope</span>
+                  <HiChevronUpDown className="text-gray-400 ml-15" size={16} />
+                </div>
+              </div>
             </form>
           </main>
           {/* Right Sidebar */}
