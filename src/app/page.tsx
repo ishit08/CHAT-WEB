@@ -3,23 +3,33 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX } from "react-icons/fi";
+import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX, FiRefreshCw, FiHelpCircle, FiDownload, FiVolumeX, FiList } from "react-icons/fi";
 import { FaRegSmile } from "react-icons/fa";
-import { IoMdSend } from "react-icons/io";
+import { IoMdSend, IoMdArrowDropdown } from "react-icons/io";
 import { AiFillHome } from "react-icons/ai";
 import { BsChatDotsFill } from "react-icons/bs";
 import { IoTicket } from "react-icons/io5";
-import { FaChartLine, FaListUl } from "react-icons/fa6";
+import { FaChartLine, FaListUl, FaAt } from "react-icons/fa6";
 import { HiMegaphone } from "react-icons/hi2";
 import { LuNetwork } from "react-icons/lu";
 import { BsStars } from "react-icons/bs";
 import { RiContactsBookFill, RiFolderImageFill } from "react-icons/ri";
 import { MdChecklist } from "react-icons/md";
 import { IoIosSettings } from "react-icons/io";
-import { TbStarsFilled } from "react-icons/tb";
+import { TbStarsFilled, TbRefreshDot } from "react-icons/tb";
 import { LuSquareChevronRight } from "react-icons/lu";
 import { HiFolderArrowDown } from "react-icons/hi2";
 import { IoFilterSharp } from "react-icons/io5";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { HiChevronUpDown } from "react-icons/hi2";
+import { MdInstallDesktop } from "react-icons/md";
+import { BiSolidBellOff } from "react-icons/bi";
+import { TbSquareChevronLeft } from "react-icons/tb";
+import { LuRefreshCw, LuPencilLine } from "react-icons/lu";
+import { VscListSelection } from "react-icons/vsc";
+import { RiListCheck2, RiListSettingsLine } from "react-icons/ri";
+import { DiHtml5Connectivity } from "react-icons/di";
+import { MdGroups } from "react-icons/md";
 
 type Chat = {
   id: string;
@@ -352,14 +362,33 @@ export default function Home() {
         {/* Top Bar */}
         <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center justify-between z-30 px-6">
           <div className="flex items-center gap-2">
-            <BsChatDotsFill className="w-5 h-5 text-gray-400" />
+            <BsChatDotsFill className="w-5 h-5" style={{ color: '#8B929C' }} />
             <span className="font-bold text-lg text-gray-400">chats</span>
           </div>
           <div className="flex items-center gap-3">
-            {/* Placeholder for right controls */}
-            <button className="text-gray-400 hover:text-gray-600"><FiSearch size={20} /></button>
-            <button className="text-gray-400 hover:text-gray-600"><FiSettings size={20} /></button>
-            <button className="text-gray-400 hover:text-gray-600"><FiLogOut size={20} /></button>
+            <button className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100 text-sm font-bold">
+              <TbRefreshDot className="w-4 h-4" /> Refresh
+            </button>
+            <button className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100 text-sm font-bold">
+              <IoMdHelpCircleOutline className="w-4 h-4" /> Help
+            </button>
+            <div className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 text-sm font-bold">
+              <span className="w-5 h-5 flex items-center justify-center rounded-full bg-yellow-100 mr-1">
+                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+              </span>
+              5 / 6 phones
+              <HiChevronUpDown className="w-4 h-4 ml-1" />
+            </div>
+            <button className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
+              <MdInstallDesktop className="w-4 h-4" />
+            </button>
+            <button className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
+              <BiSolidBellOff className="w-4 h-4" />
+            </button>
+            <div className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
+              <BsStars className="w-4 h-4 text-yellow-300" />
+              <FiList className="w-4 h-4 text-gray-500" />
+            </div>
           </div>
         </div>
         <div className="flex flex-1 w-full h-[calc(100vh-3rem)]">
@@ -369,8 +398,8 @@ export default function Home() {
             <div className="flex items-center justify-between px-3 py-3 bg-white border-b border-gray-100 text-xs border-r border-gray-200">
               {/* Left: Custom filter and Save */}
               <div className="flex items-center gap-x-1">
-                <button className="flex items-center gap-1 text-green-600 font-semibold bg-white px-1 py-0.5 rounded border border-transparent text-xs">
-                  <HiFolderArrowDown className="w-3 h-3 text-green-600" />
+                <button className="flex items-center gap-1 font-semibold bg-white px-1 py-0.5 rounded border border-transparent text-xs" style={{ color: '#199455' }}>
+                  <HiFolderArrowDown className="w-3 h-3" style={{ color: '#199455' }} />
                   Custom filter
                 </button>
                 <button className="bg-white border border-gray-300 px-1 py-0.5 rounded text-gray-700 text-xs shadow-sm">Save</button>
@@ -382,11 +411,11 @@ export default function Home() {
                   <input className="bg-transparent outline-none text-xs text-gray-700 placeholder-gray-700 w-10" placeholder="Search" onClick={() => setShowNewChatModal(true)} />
                 </div>
                 <div className="relative bg-white border border-gray-300 px-1 py-0.5 rounded flex items-center ml-1">
-                  <button className="flex items-center gap-1 text-green-600 font-semibold bg-white border-none p-0 text-xs">
-                    <IoFilterSharp className="w-2.5 h-2.5 text-green-600" />
+                  <button className="flex items-center gap-1 font-semibold bg-white border-none p-0 text-xs" style={{ color: '#199455' }}>
+                    <IoFilterSharp className="w-2.5 h-2.5" style={{ color: '#199455' }} />
                     Filtered
                   </button>
-                  <span className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center bg-green-200 rounded-full text-[10px] text-green-700 cursor-pointer border border-white">×</span>
+                  <span className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center rounded-full text-base cursor-pointer" style={{ background: '#5BA16F', color: 'white' }}>×</span>
                 </div>
               </div>
             </div>
@@ -531,6 +560,39 @@ export default function Home() {
               </button>
             </form>
           </main>
+          {/* Right Sidebar */}
+          <aside className="w-14 bg-white border-l border-gray-200 flex flex-col items-center py-4 gap-2mak">
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <TbSquareChevronLeft size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <LuRefreshCw size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <LuPencilLine size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <VscListSelection size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <RiListCheck2 size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <DiHtml5Connectivity size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <FaAt size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <MdGroups size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <RiFolderImageFill size={18} />
+            </button>
+            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
+              <RiListSettingsLine size={18} />
+            </button>
+          </aside>
         </div>
       </div>
     </div>
