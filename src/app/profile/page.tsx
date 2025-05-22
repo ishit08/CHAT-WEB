@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
