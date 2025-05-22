@@ -35,6 +35,10 @@ import { RiBarChartBoxFill } from "react-icons/ri";
 import { FaMicrophone } from "react-icons/fa";
 import Image from "next/image";
 import { IoSend } from "react-icons/io5";
+import { RiChatAiLine } from 'react-icons/ri';
+import { BsCheckAll } from "react-icons/bs";
+import { FaPhoneAlt } from "react-icons/fa";
+import { IoPersonCircle } from "react-icons/io5";
 
 type Chat = {
   id: string;
@@ -56,6 +60,159 @@ type User = {
   email: string;
   name: string;
   phone_number: string;
+};
+
+// DEMO CONTACTS (always shown for every user)
+const DEMO_CONTACTS: Chat[] = [
+  {
+    id: "demo-skope-final-5",
+    name: "Test Skope Final 5",
+    lastMessage: "Support2: This doesn't go on Tuesday...",
+    lastMessageTime: "Yesterday",
+    avatarUrl: "/Logo4.svg",
+  },
+  {
+    id: "demo-periskope-team",
+    name: "Periskope Team Chat",
+    lastMessage: "Periskope: Test message",
+    lastMessageTime: "28-Feb-25",
+    avatarUrl: "/Logo2.svg",
+  },
+  {
+    id: "+91-9999999999",
+    name: "+91 9999999999t",
+    lastMessage: "Hi there, I'm Swapnika, Co-Founder of ...",
+    lastMessageTime: "25-Feb-25",
+    avatarUrl: "/Logo2.svg",
+  },
+  
+  {
+    id: "demo-demo17",
+    name: "Test Demo17",
+    lastMessage: "Rohosen: 123",
+    lastMessageTime: "25-Feb-25",
+    avatarUrl: undefined,
+  },
+  {
+    id: "Test-El-Centro",
+    name: "Test El Centro",
+    lastMessage: "Rohosen: 123",
+    lastMessageTime: "25-Feb-25",
+    avatarUrl: undefined,
+  },
+  {
+    id: "Testing-group",
+    name: "Testing group",
+    lastMessage: "Testing 12345",
+    lastMessageTime: "27-Jan-25",
+    avatarUrl: undefined,
+  },
+  {
+    id: "Yasin-3",
+    name: "Yasin 3",
+    lastMessage: "First Bulk Message",
+    lastMessageTime: "25-Nov-24",
+    avatarUrl: undefined,
+  },
+  {
+    id: "Test-Skope-Final-9473",
+    name: "Test Skope Final 9473",
+    lastMessage: "Hey",
+    lastMessageTime: "01-Jan-25",
+    avatarUrl: undefined,
+  },
+  {
+    id: "Skope-Demo",
+    name: "Skope demo",
+    lastMessage: "test 123",
+    lastMessageTime: "20-Dec-24",
+    avatarUrl: undefined,
+  },
+  {
+    id: "demo-demo15",
+    name: "Test Demo15",
+    lastMessage: "test 123",
+    lastMessageTime: "20-Dec-24",
+    avatarUrl: undefined,
+  },
+];
+
+// DEMO MESSAGES for each demo chat
+const DEMO_MESSAGES: Record<string, Message[]> = {
+  "demo-periskope-team": [
+    {
+      id: "1",
+      content: "Periskope: Test message",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      content: "Welcome to the Periskope Team Chat!",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+  ],
+  "Test-El-Centro": [
+    {
+      id: "1",
+      content: "Support2: This doesn't go on Tuesday...",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+  ],
+  "demo-demo17": [
+    {
+      id: "1",
+      content: "Rohosen: 123",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+  ],
+  "demo-demo15": [
+    {
+      id: "1",
+      content: "test 123",
+      sender_id: "demo",
+      created_at: new Date().toISOString(),
+    },
+  ],
+};
+
+// Add group chat IDs for easy checking
+const GROUP_CHAT_IDS = [
+  "demo-skope-final-5",
+  "demo-periskope-team",
+  "demo-demo17",
+  "Test-El-Centro",
+];
+
+// Add chat labels and numbers for each chat (customize as needed)
+const CHAT_LABELS: Record<string, { labels: string[]; numbers?: string[] }> = {
+  "demo-skope-final-5": { labels: ["Demo"]},
+  "demo-periskope-team": { labels: ["Demo", "internal","+1"]},
+  "+91-9999999999": { labels: ["Demo", "Signup"] },
+  "demo-demo17": { labels: ["Content", "Demo"]},
+  "Test-El-Centro": { labels: ["Demo"], numbers: [] },
+  "Testing-group": { labels: ["Demo"], numbers: [] },
+  "Yasin-3": { labels: ["Demo", "Dont Send","+2"]},
+  "Test-Skope-Final-9473": { labels: ["Demo"]},
+  "Skope-Demo": { labels: ["Demo"], numbers: [] },
+  "demo-demo15": { labels: ["Demo"], numbers: [] },
+};
+
+// Add phone numbers for each chat (customize as needed)
+const CHAT_PHONES: Record<string, string> = {
+  "demo-skope-final-5": "+91 99718 44008 +1",
+  "demo-periskope-team": "+91 99718 44008 +3",
+  "+91-9999999999": "+91 92896 65999 +1",
+  "demo-demo17": "+91 99718 44008 +1",
+  "Test-El-Centro": "+91 99718 44008",
+  "Testing-group": "+91 92896 65999",
+  "Yasin-3": "+91 99718 44008 +3",
+  "Test-Skope-Final-9473": "+91 99718 44008 +1",
+  "Skope-Demo": "+91 92896 65999",
+  "demo-demo15": "+91 92896 65999",
 };
 
 export default function Home() {
@@ -141,9 +298,16 @@ export default function Home() {
       };
     });
     const formattedChats = await Promise.all(chatPromises);
-    setChats(formattedChats);
-    if (formattedChats.length > 0) {
-      setSelectedChat(formattedChats[0].id);
+
+    // Filter out demo contacts that might have the same ID as a real chat
+    const realChatIds = new Set(formattedChats.map(c => c.id));
+    const demoChatsToAdd = DEMO_CONTACTS.filter(demo => !realChatIds.has(demo.id));
+    const allChats = [...demoChatsToAdd, ...formattedChats];
+
+    setChats(allChats);
+    if (allChats.length > 0) {
+      const defaultChat = allChats.find(c => c.id === 'Test-El-Centro');
+      setSelectedChat(defaultChat ? defaultChat.id : allChats[0].id);
     }
   };
 
@@ -170,6 +334,10 @@ export default function Home() {
   };
 
   const fetchMessages = async (chatId: string) => {
+    if (chatId.startsWith("demo-")) {
+      setMessages(DEMO_MESSAGES[chatId] || []);
+      return;
+    }
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -424,9 +592,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            {/* Search/filter */}
-   
-
             {/* New Chat Modal */}
             {showNewChatModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -475,43 +640,74 @@ export default function Home() {
               </div>
             )}
 
-            {/* Chat list */}
-            <div className="flex-1 overflow-y-auto border-r border-gray-200">
-              {chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`flex items-center gap-3 px-4 py-3 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
-                  onClick={() => setSelectedChat(chat.id)}
-                >
-                  {/* Avatar: show profile image if available, else fallback to initial */}
-                  {chat.avatarUrl ? (
-                    <img
-                      src={chat.avatarUrl}
-                      alt={chat.name}
-                      className="w-12 h-12 rounded-full object-cover bg-gray-200"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
-                      {chat.name.charAt(0)}
+            {/* Chat list: independently scrollable, fixed height below filter/search bar */}
+            <div className="border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                 style={{ height: 'calc(100vh - 48px - 48px)', overflowY: 'auto' }}>
+              {chats.map((chat) => {
+                const isGroup = GROUP_CHAT_IDS.includes(chat.id);
+                const chatLabels = CHAT_LABELS[chat.id]?.labels || [];
+                const chatNumbers = CHAT_LABELS[chat.id]?.numbers || [];
+                const phone = CHAT_PHONES[chat.id] || "";
+                // Blue double tick for these chats
+                const blueTickIds = ["Yasin-3", "Skope-Demo", "demo-demo15"];
+                const isBlueTick = blueTickIds.includes(chat.id);
+                return (
+                  <div
+                    key={chat.id}
+                    className={`flex items-center gap-2 px-2 py-2 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
+                    style={{ minHeight: 48 }}
+                    onClick={() => setSelectedChat(chat.id)}
+                  >
+                    {/* Avatar: show profile image if available, else fallback to initial */}
+                    {chat.avatarUrl ? (
+                      <img
+                        src={chat.avatarUrl}
+                        alt={chat.name}
+                        className="w-11 h-11 rounded-full object-cover bg-gray-200"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center text-base font-bold text-gray-500">
+                        {chat.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 flex flex-row items-stretch">
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="font-semibold text-xs text-gray-900 truncate">{chat.name}</div>
+                        <div className="flex items-center gap-1">
+                          {/* Double tick for non-group chats */}
+                          {!isGroup && (
+                            <BsCheckAll size={14} color={isBlueTick ? "#199455" : "#8BC34A"} className="inline-block mr-1" />
+                          )}
+                          <div className="text-xs text-gray-500 truncate">{chat.lastMessage}</div>
+                        </div>
+                        {/* Phone number below */}
+                        {phone && (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="flex items-center rounded-full bg-gray-100 px-2 py-0.5" style={{ minHeight: 10 }}>
+                              <FaPhoneAlt size={8} className="text-gray-400 mr-1" />
+                              <span className="text-[8px] text-gray-400 font-medium">{phone}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end justify-between min-w-[60px] ml-2">
+                        <div className="flex flex-wrap gap-1 mb-0.5">
+                          {/* Render labels */}
+                          {chatLabels.map((label, idx) => (
+                            <span key={label+idx} className={`px-1 py-0.5 rounded text-[10px] font-semibold ${label === 'Demo' ? 'bg-orange-100 text-orange-500' : label === 'internal' ? 'bg-green-100 text-green-600' : label === 'Signup' ? 'bg-green-100 text-green-600' : label === 'Content' ? 'bg-green-100 text-green-600' : label === 'Dont Send' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'}`}>{label}</span>
+                          ))}
+                          {/* Render numbers */}
+                          {chatNumbers.map((num, idx) => (
+                            <span key={num+idx} className="text-[10px] font-bold text-gray-500">{num}</span>
+                          ))}
+                        </div>
+                        <IoPersonCircle size={18} className="text-gray-200 mb-0.5" />
+                        <span className="text-[10px] text-gray-400 whitespace-nowrap">{chat.lastMessageTime}</span>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-gray-900 truncate">{chat.name}</span>
-                      <span className="text-xs text-gray-400">{chat.lastMessageTime}</span>
-                    </div>
-                    <div className="text-sm text-gray-500 truncate">{chat.lastMessage}</div>
                   </div>
-                </div>
-              ))}
-            </div>
-            {/* Bottom nav */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-[#f6f6f6]">
-              <div className="flex gap-4">
-                <button className="text-gray-400 hover:text-green-500"><FiUsers size={22} /></button>
-                <button className="text-gray-400 hover:text-green-500"><FiMessageSquare size={22} /></button>
-              </div>
-              <button className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">U</button>
+                );
+              })}
             </div>
           </aside>
           {/* Main chat area */}
@@ -613,6 +809,9 @@ export default function Home() {
             </button>
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
               <RiListSettingsLine size={18} />
+            </button>
+            <button className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
+              <RiChatAiLine size={22} />
             </button>
           </aside>
         </div>
