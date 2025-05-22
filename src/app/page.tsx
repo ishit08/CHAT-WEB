@@ -24,6 +24,7 @@ type Chat = {
   name: string;
   lastMessage?: string;
   lastMessageTime?: string;
+  avatarUrl?: string;
 };
 
 type Message = {
@@ -119,6 +120,7 @@ export default function Home() {
         name,
         lastMessage: "Loading...",
         lastMessageTime: "",
+        avatarUrl: (await getOtherUserAvatar(item.chat_id, userId)) || undefined,
       };
     });
     const formattedChats = await Promise.all(chatPromises);
@@ -126,6 +128,28 @@ export default function Home() {
     if (formattedChats.length > 0) {
       setSelectedChat(formattedChats[0].id);
     }
+  };
+
+  const getOtherUserAvatar = async (chatId: string, currentUserId: string) => {
+    const { data: members, error } = await supabase
+      .from("chat_members")
+      .select("user_id, users:user_id(avatar_url)")
+      .eq("chat_id", chatId);
+    if (error) {
+      console.error("Error fetching chat members:", error);
+      return null;
+    }
+    const membersArr = members as Array<{ user_id: string; users: { avatar_url?: string } | { avatar_url?: string }[] }>;
+    const other = membersArr.find((m) => m.user_id !== currentUserId);
+    let avatarUrl: string | undefined;
+    if (other) {
+      if (Array.isArray(other.users)) {
+        avatarUrl = other.users[0]?.avatar_url;
+      } else {
+        avatarUrl = other.users?.avatar_url;
+      }
+    }
+    return avatarUrl;
   };
 
   const fetchMessages = async (chatId: string) => {
@@ -260,59 +284,66 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full bg-[#f0f2f5] flex">
       {/* Pixel-perfect Vertical Sidebar */}
-      <nav className="h-screen w-20 bg-white flex flex-col items-center pt-6 pb-4 select-none">
+      <nav className="h-screen w-14 bg-[#f7f7f7] border-r border-gray-200 flex flex-col items-center pt-2 pb-2 select-none">
         {/* Logo */}
-        <div className="relative flex items-center justify-center mb-8" style={{height: 64}}>
-          <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-3xl leading-none">P</span>
-          </div>
-          <span className="absolute right-4 bottom-3 text-green-900 font-bold text-lg" style={{lineHeight: 1}}>12</span>
+        <div className="relative flex items-center justify-center mb-4" style={{height: 48}}>
+          <img src="/Logo4.svg" alt="Logo" className="w-10 h-10 rounded-full object-contain bg-white" />
         </div>
         {/* Icons */}
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <AiFillHome size={28} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <AiFillHome size={20} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-2xl bg-green-50">
-          <BsChatDotsFill size={24} className="text-green-600" />
+        {/* Divider after Home */}
+        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
+
+        <button className="flex items-center justify-center w-10 h-8 rounded-lg bg-gray-200">
+          <BsChatDotsFill size={20} className="text-green-600" />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <IoTicket size={28} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <IoTicket size={20} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <FaChartLine size={28} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <FaChartLine size={20} />
         </button>
-        <div className="h-2" />
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <FaListUl size={28} />
+        {/* Divider after Line Chart */}
+        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
+
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <FaListUl size={20} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <HiMegaphone size={28} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <HiMegaphone size={20} />
         </button>
-        <div className="mb-2 relative flex items-center justify-center w-12 h-12">
-          <LuNetwork size={28} className="text-gray-500 hover:text-green-600" style={{ transform: 'scaleX(-1)' }} />
-          <BsStars size={16} className="absolute right-0 top-1 text-yellow-400" />
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200 relative">
+          <LuNetwork size={20} className="text-gray-500" style={{ transform: 'scaleX(-1)' }} />
+          <BsStars size={12} className="absolute right-0 top-1 text-yellow-400" />
         </div>
-        <div className="h-2" />
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <RiContactsBookFill size={24} />
+        {/* Divider after Network */}
+        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
+
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <RiContactsBookFill size={18} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <RiFolderImageFill size={24} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <RiFolderImageFill size={18} />
         </button>
-        <div className="h-2" />
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <MdChecklist size={24} />
+        {/* Divider after Gallery */}
+        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <MdChecklist size={18} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500 hover:text-green-600">
-          <IoIosSettings size={26} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
+          <IoIosSettings size={18} />
         </button>
+
         <div className="flex-1" />
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500">
-          <TbStarsFilled size={24} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500">
+          <TbStarsFilled size={18} />
         </button>
-        <button className="mb-2 flex items-center justify-center w-12 h-12 rounded-lg text-gray-500">
-          <LuSquareChevronRight size={24} />
+        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500">
+          <LuSquareChevronRight size={18} />
         </button>
+  
       </nav>
       {/* Sidebar */}
       <aside className="w-[340px] bg-white border-r border-gray-200 flex flex-col">
@@ -400,9 +431,18 @@ export default function Home() {
               className={`flex items-center gap-3 px-4 py-3 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
               onClick={() => setSelectedChat(chat.id)}
             >
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
-                {chat.name.charAt(0)}
-              </div>
+              {/* Avatar: show profile image if available, else fallback to initial */}
+              {chat.avatarUrl ? (
+                <img
+                  src={chat.avatarUrl}
+                  alt={chat.name}
+                  className="w-12 h-12 rounded-full object-cover bg-gray-200"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
+                  {chat.name.charAt(0)}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-gray-900 truncate">{chat.name}</span>

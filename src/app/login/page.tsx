@@ -20,6 +20,8 @@ export default function LoginPage() {
     const siteUrl = isLocalhost
       ? window.location.origin
       : process.env.NEXT_PUBLIC_SITE_URL;
+    console.log("isLocalhost:", isLocalhost);
+    console.log("siteUrl being used for redirect:", siteUrl);
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
