@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
 import { FaRegSmile } from "react-icons/fa";
-import { IoMdSend, IoMdArrowDropdown } from "react-icons/io";
 import { AiFillHome } from "react-icons/ai";
 import { BsChatDotsFill } from "react-icons/bs";
 import { IoTicket } from "react-icons/io5";
@@ -30,12 +29,12 @@ import { VscListSelection } from "react-icons/vsc";
 import { RiListCheck2, RiListSettingsLine } from "react-icons/ri";
 import { DiHtml5Connectivity } from "react-icons/di";
 import { MdGroups } from "react-icons/md";
-import { IoSend } from "react-icons/io5";
 import { AiOutlineHistory } from "react-icons/ai";
 import { HiOutlineSparkles } from "react-icons/hi";
 import { RiBarChartBoxFill } from "react-icons/ri";
 import { FaMicrophone } from "react-icons/fa";
 import Image from "next/image";
+import { IoSend } from "react-icons/io5";
 
 type Chat = {
   id: string;
