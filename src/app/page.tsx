@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
+import { FiSearch, FiSettings, FiLogOut, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
 import { FaRegSmile } from "react-icons/fa";
 import { AiFillHome } from "react-icons/ai";
 import { BsChatDotsFill } from "react-icons/bs";
