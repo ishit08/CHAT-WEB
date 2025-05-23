@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { FiSearch, FiSettings, FiLogOut, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
+import { FiSearch, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
 import { FaRegSmile } from "react-icons/fa";
 import { AiFillHome } from "react-icons/ai";
 import { BsChatDotsFill } from "react-icons/bs";
@@ -409,7 +409,7 @@ export default function Home() {
         };
       }
     }
-  }, [selectedChat, demoMessages]);
+  }, [selectedChat, demoMessages, fetchMessages]);
 
   // Remove the polling mechanism since we're handling demo messages differently
   useEffect(() => {
@@ -809,12 +809,12 @@ export default function Home() {
                       <div className="flex flex-col items-end justify-between min-w-[60px] ml-2">
                         <div className="flex flex-wrap gap-1 mb-0.5">
                           {/* Render labels */}
-                          {chatLabels.map((label, idx) => (
-                            <span key={label+idx} className={`px-1 py-0.5 rounded text-[10px] font-semibold ${label === 'Demo' ? 'bg-orange-100 text-orange-500' : label === 'internal' ? 'bg-green-100 text-green-600' : label === 'Signup' ? 'bg-green-100 text-green-600' : label === 'Content' ? 'bg-green-100 text-green-600' : label === 'Dont Send' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'}`}>{label}</span>
+                          {chatLabels.map((label) => (
+                            <span key={label} className={`px-1 py-0.5 rounded text-[10px] font-semibold ${label === 'Demo' ? 'bg-orange-100 text-orange-500' : label === 'internal' ? 'bg-green-100 text-green-600' : label === 'Signup' ? 'bg-green-100 text-green-600' : label === 'Content' ? 'bg-green-100 text-green-600' : label === 'Dont Send' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'}`}>{label}</span>
                           ))}
                           {/* Render numbers */}
-                          {chatNumbers.map((num, idx) => (
-                            <span key={num+idx} className="text-[10px] font-bold text-gray-500">{num}</span>
+                          {chatNumbers.map((num) => (
+                            <span key={num} className="text-[10px] font-bold text-gray-500">{num}</span>
                           ))}
                         </div>
                         <IoPersonCircle size={18} className="text-gray-200 mb-0.5" />
