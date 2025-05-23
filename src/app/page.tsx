@@ -747,12 +747,28 @@ export default function Home() {
 
   // Update chat sorting logic
   let displayedChats = chats;
+
+  // Apply search filter first
+  if (chatSearch.trim() !== "") {
+    displayedChats = displayedChats.filter(chat => {
+      const searchMatch =
+        chat.name.toLowerCase().includes(chatSearch.toLowerCase()) ||
+        (chat.lastMessage && chat.lastMessage.toLowerCase().includes(chatSearch.toLowerCase())) ||
+        (CHAT_PHONES[chat.id] && CHAT_PHONES[chat.id].toLowerCase().includes(chatSearch.toLowerCase()));
+      return searchMatch;
+    });
+  }
+
+  // Then apply sort
   if (chatSortOrder === 'asc') {
-    displayedChats = [...chats].sort((a, b) => a.name.localeCompare(b.name));
+    displayedChats = [...displayedChats].sort((a, b) => a.name.localeCompare(b.name));
   } else if (chatSortOrder === 'desc') {
-    displayedChats = [...chats].sort((a, b) => b.name.localeCompare(a.name));
+    displayedChats = [...displayedChats].sort((a, b) => b.name.localeCompare(a.name));
   } else if (chatSortOrder === 'default') {
-    displayedChats = defaultChats;
+    // Show the default order, but filtered by search
+    displayedChats = defaultChats.filter(chat =>
+      displayedChats.find(c => c.id === chat.id)
+    );
   }
 
   if (loading) {
