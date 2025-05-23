@@ -925,7 +925,11 @@ export default function Home() {
                   <span
                     className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center rounded-full text-base cursor-pointer"
                     style={{ background: '#5BA16F', color: 'white' }}
-                    onClick={() => { setShowFilterDropdown(false); setChatSortOrder('asc'); }}
+                    onClick={() => {
+                      setShowFilterDropdown(false);
+                      setChatSortOrder('asc');
+                      setChatSearch("");
+                    }}
                   >×</span>
                 </div>
               </div>
@@ -964,12 +968,15 @@ export default function Home() {
                           className="p-4 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
                           onClick={() => createNewChat(user.id)}
                         >
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold text-gray-500 uppercase">
                             {user.name.charAt(0)}
                           </div>
                           <div>
                             <div className="font-medium">{user.name}</div>
                             <div className="text-sm text-gray-500">{user.email}</div>
+                            {user.phone_number && (
+                              <div className="text-xs text-gray-400">{user.phone_number}</div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1135,7 +1142,7 @@ export default function Home() {
                   <div className="flex items-center -space-x-3 mr-2">
                     {[0,1,2,3,4].map((i) => (
                       i === 4 ? (
-                        <div className="relative">
+                        <div className="relative" key={i}>
                           <Image src="/Logo2.svg" alt="Logo2" width={28} height={28} className="rounded-full border-2 border-white" />
                           <span className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></span>
                         </div>
