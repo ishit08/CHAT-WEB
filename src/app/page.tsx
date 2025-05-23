@@ -675,24 +675,6 @@ export default function Home() {
     fetchChatUsers();
   }, [selectedChat]);
 
-  // Filter and Search Logic
-  const filteredChats = chats
-    .filter(chat => {
-      // Search logic
-      const searchMatch =
-        chat.name.toLowerCase().includes(chatSearch.toLowerCase()) ||
-        (chat.lastMessage && chat.lastMessage.toLowerCase().includes(chatSearch.toLowerCase())) ||
-        (CHAT_PHONES[chat.id] && CHAT_PHONES[chat.id].toLowerCase().includes(chatSearch.toLowerCase()));
-      return searchMatch;
-    })
-    .sort((a, b) => {
-      if (chatSortOrder === 'asc') {
-        return a.name.localeCompare(b.name);
-      } else {
-        return b.name.localeCompare(a.name);
-      }
-    });
-
   // useEffect to close label input on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
