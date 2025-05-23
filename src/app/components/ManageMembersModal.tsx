@@ -1,5 +1,6 @@
 import { FiX } from "react-icons/fi";
 import React from "react";
+import { SupabaseClient } from '@supabase/supabase-js';
 
 type User = {
   id: string;
@@ -26,7 +27,7 @@ interface ManageMembersModalProps {
   currentUserId: string | null;
   fetchChats: (userId: string) => Promise<void>;
   setChatMemberNames: (names: string[]) => void;
-  supabase: any;
+  supabase: SupabaseClient;
   DEMO_CONTACTS: Chat[];
 }
 
@@ -76,7 +77,9 @@ export default function ManageMembersModal({
                 .select("user_id, users:user_id(name)")
                 .eq("chat_id", selectedChat);
               if (!err2 && members) {
-                const names = members.map((m: any) => Array.isArray(m.users) ? m.users[0]?.name : m.users?.name).filter(Boolean);
+                const names = members.map((m: { users: { name: string } | { name: string }[] }) => 
+                  Array.isArray(m.users) ? m.users[0]?.name : m.users?.name
+                ).filter(Boolean);
                 setChatMemberNames(names);
               } else {
                 setChatMemberNames([]);

@@ -3,45 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { FiSearch, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
-import { FaRegSmile } from "react-icons/fa";
-import { AiFillHome } from "react-icons/ai";
-import { BsChatDotsFill } from "react-icons/bs";
-import { IoTicket } from "react-icons/io5";
-import { FaChartLine, FaListUl, FaAt } from "react-icons/fa6";
-import { HiMegaphone } from "react-icons/hi2";
-import { LuNetwork } from "react-icons/lu";
-import { BsStars } from "react-icons/bs";
-import { RiContactsBookFill, RiFolderImageFill } from "react-icons/ri";
-import { MdChecklist } from "react-icons/md";
-import { IoIosSettings } from "react-icons/io";
-import { TbStarsFilled, TbRefreshDot } from "react-icons/tb";
-import { LuSquareChevronRight } from "react-icons/lu";
-import { HiFolderArrowDown } from "react-icons/hi2";
-import { IoFilterSharp } from "react-icons/io5";
-import { IoMdHelpCircleOutline } from "react-icons/io";
-import { HiChevronUpDown } from "react-icons/hi2";
-import { MdInstallDesktop } from "react-icons/md";
-import { BiSolidBellOff } from "react-icons/bi";
-import { TbSquareChevronLeft } from "react-icons/tb";
-import { LuRefreshCw, LuPencilLine } from "react-icons/lu";
-import { VscListSelection } from "react-icons/vsc";
-import { RiListCheck2, RiListSettingsLine } from "react-icons/ri";
-import { DiHtml5Connectivity } from "react-icons/di";
-import { MdGroups } from "react-icons/md";
-import { AiOutlineHistory } from "react-icons/ai";
-import { HiOutlineSparkles } from "react-icons/hi";
-import { RiBarChartBoxFill } from "react-icons/ri";
-import { FaMicrophone } from "react-icons/fa";
-import Image from "next/image";
-import { IoSend } from "react-icons/io5";
 import { RiChatAiLine } from 'react-icons/ri';
-import { BsCheckAll } from "react-icons/bs";
-import { FaPhoneAlt } from "react-icons/fa";
-import { IoPersonCircle } from "react-icons/io5";
-import { HiSparkles } from "react-icons/hi";
-import { IoPersonCircleSharp } from "react-icons/io5";
-import { IoPerson } from "react-icons/io5";
 import Sidebar from "./components/Sidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatList from "./components/ChatList";
@@ -425,7 +387,7 @@ export default function Home() {
     }
     setMessages(messages);
     // Fetch attachments for these messages
-    const messageIds = messages.map((msg: any) => msg.id);
+    const messageIds = messages.map((msg: { id: string }) => msg.id);
     if (messageIds.length > 0) {
       const { data: attachments, error: attError } = await supabase
         .from("attachments")
@@ -780,7 +742,9 @@ export default function Home() {
         .select("user_id, users:user_id(name)")
         .eq("chat_id", selectedChat);
       if (!error && members) {
-        const names = members.map((m: any) => Array.isArray(m.users) ? m.users[0]?.name : m.users?.name).filter(Boolean);
+        const names = members.map((m: { users: { name: string } | { name: string }[] }) => 
+          Array.isArray(m.users) ? m.users[0]?.name : m.users?.name
+        ).filter(Boolean);
         setChatMemberNames(names);
       } else {
         setChatMemberNames([]);
