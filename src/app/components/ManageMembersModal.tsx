@@ -22,7 +22,7 @@ interface ManageMembersModalProps {
   onClose: () => void;
   allPossibleMembers: (User & { isDemo: boolean })[];
   chatMembers: string[];
-  setChatMembers: (v: string[]) => void;
+  setChatMembers: React.Dispatch<React.SetStateAction<string[]>>;
   selectedChat: string | null;
   currentUserId: string | null;
   fetchChats: (userId: string) => Promise<void>;
