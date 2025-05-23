@@ -225,6 +225,17 @@ const TEST_EL_CENTRO_MESSAGES: TestElCentroMessage[] = [
   { id: '8', sender: 'Periskope', phone: '+91 99718 44008', content: 'testing', time: '09:49', date: '23-01-2025', side: 'right', email: 'bharat@hashlabs.dev' },
 ];
 
+// Define Attachment type
+type Attachment = {
+  id: string;
+  message_id: string;
+  file_name: string;
+  file_type: string;
+  file_url: string;
+  file_size: number;
+  created_at: string;
+};
+
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -240,7 +251,7 @@ export default function Home() {
   const [demoMessages, setDemoMessages] = useState<Record<string, Message[]>>(DEMO_MESSAGES);
   const [attachment, setAttachment] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [attachmentsMap, setAttachmentsMap] = useState<Record<string, any[]>>({});
+  const [attachmentsMap, setAttachmentsMap] = useState<Record<string, Attachment[]>>({});
   const [uploading, setUploading] = useState(false);
   const [userMap, setUserMap] = useState<Record<string, { name: string; phone_number: string }>>({});
   const [chatSearch, setChatSearch] = useState("");
@@ -398,7 +409,7 @@ export default function Home() {
         setAttachmentsMap({});
       } else {
         // Map message_id to array of attachments
-        const map: Record<string, any[]> = {};
+        const map: Record<string, Attachment[]> = {};
         for (const att of attachments) {
           if (!map[att.message_id]) map[att.message_id] = [];
           map[att.message_id].push(att);

@@ -211,7 +211,7 @@ export default function ChatList({
                         <input
                           className="border px-1 text-xs rounded w-16"
                           value={labelInput[chat.id] || ""}
-                          onChange={e => setLabelInput((prev: any) => ({ ...prev, [chat.id]: e.target.value }))}
+                          onChange={e => setLabelInput((prev: Record<string, string>) => ({ ...prev, [chat.id]: e.target.value }))}
                           autoFocus
                           onClick={e => e.stopPropagation()}
                         />

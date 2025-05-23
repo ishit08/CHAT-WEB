@@ -1,4 +1,5 @@
 import { FiPaperclip } from "react-icons/fi";
+import Image from 'next/image';
 
 interface ChatMessagesProps {
   selectedChat: string | null;
@@ -76,8 +77,8 @@ export default function ChatMessages({
   return (
     <>
       {messages.map((message) => {
-        let senderName = userMap[message.sender_id]?.name || (message.sender_id === currentUserId ? "You" : "User");
-        let senderPhone = userMap[message.sender_id]?.phone_number || "";
+        const senderName = userMap[message.sender_id]?.name || (message.sender_id === currentUserId ? "You" : "User");
+        const senderPhone = userMap[message.sender_id]?.phone_number || "";
         return (
           <div
             key={message.id}
@@ -106,12 +107,14 @@ export default function ChatMessages({
                   {attachmentsMap[message.id].map(att => {
                     if (att.file_type && att.file_type.startsWith('image/')) {
                       return (
-                        <img
+                        <Image
                           key={att.id}
                           src={att.file_url}
                           alt={att.file_name}
+                          width={200}
+                          height={200}
                           className="mb-1 max-w-xs rounded border"
-                          style={{ maxHeight: 200 }}
+                          style={{ maxHeight: 200, objectFit: 'contain' }}
                         />
                       );
                     } else if (att.file_type && att.file_type.startsWith('video/')) {
