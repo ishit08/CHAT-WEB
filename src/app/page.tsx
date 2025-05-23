@@ -260,10 +260,11 @@ export default function Home() {
   const [showLabelInput, setShowLabelInput] = useState<{[chatId: string]: boolean}>({});
   const labelInputRefs = useRef<{[chatId: string]: HTMLFormElement | null}>({});
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [chatSortOrder, setChatSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [chatSortOrder, setChatSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
   const [showManageMembersModal, setShowManageMembersModal] = useState(false);
   const [chatMembers, setChatMembers] = useState<string[]>([]);
   const [chatMemberNames, setChatMemberNames] = useState<string[]>([]);
+  const [defaultChats, setDefaultChats] = useState<Chat[]>([]);
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -353,6 +354,7 @@ export default function Home() {
     const allChats = [...demoChatsToAdd, ...formattedChats];
 
     setChats(allChats);
+    setDefaultChats(allChats); // Save the default order
     if (allChats.length > 0) {
       const defaultChat = allChats.find(c => c.id === 'Test-El-Centro');
       setSelectedChat(defaultChat ? defaultChat.id : allChats[0].id);
@@ -761,6 +763,16 @@ export default function Home() {
     fetchMemberNames();
   }, [selectedChat]);
 
+  // Update chat sorting logic
+  let displayedChats = chats;
+  if (chatSortOrder === 'asc') {
+    displayedChats = [...chats].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (chatSortOrder === 'desc') {
+    displayedChats = [...chats].sort((a, b) => b.name.localeCompare(a.name));
+  } else if (chatSortOrder === 'default') {
+    displayedChats = defaultChats;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -792,7 +804,7 @@ export default function Home() {
 
             {/* Chat list: independently scrollable, fixed height below filter/search bar */}
             <ChatList
-              chats={filteredChats}
+              chats={displayedChats}
               selectedChat={selectedChat}
               setSelectedChat={setSelectedChat}
               chatLabelsState={chatLabelsState}

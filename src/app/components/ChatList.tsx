@@ -22,8 +22,8 @@ interface ChatListProps {
   setChatLabelsState: React.Dispatch<React.SetStateAction<Record<string, { labels: string[]; numbers?: string[] }>>>;
   chatSearch: string;
   setChatSearch: (v: string) => void;
-  chatSortOrder: 'asc' | 'desc';
-  setChatSortOrder: (v: 'asc' | 'desc') => void;
+  chatSortOrder: 'default' | 'asc' | 'desc';
+  setChatSortOrder: (v: 'default' | 'asc' | 'desc') => void;
   showFilterDropdown: boolean;
   setShowFilterDropdown: (v: boolean) => void;
   showLabelInput: { [chatId: string]: boolean };
@@ -105,7 +105,7 @@ export default function ChatList({
               style={{ background: '#5BA16F', color: 'white' }}
               onClick={() => {
                 setShowFilterDropdown(false);
-                setChatSortOrder('asc');
+                setChatSortOrder('default');
                 setChatSearch("");
               }}
             >×</span>
