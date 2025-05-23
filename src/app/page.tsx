@@ -866,7 +866,7 @@ export default function Home() {
                 (() => {
                   let lastDate = '';
                   return [
-                    ...TEST_EL_CENTRO_MESSAGES.map((message, idx) => {
+                    ...TEST_EL_CENTRO_MESSAGES.map((message) => {
                       const showDate = message.date !== lastDate;
                       lastDate = message.date;
                       return (
