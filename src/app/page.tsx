@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { FiSearch, FiX, FiList, FiPaperclip, FiClock } from "react-icons/fi";
@@ -374,7 +374,7 @@ export default function Home() {
     return avatarUrl;
   };
 
-  const fetchMessages = async (chatId: string) => {
+  const fetchMessages = useCallback(async (chatId: string) => {
     if (chatId.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === chatId)) {
       setMessages(demoMessages[chatId] || []);
       return;
@@ -389,7 +389,7 @@ export default function Home() {
       return;
     }
     setMessages(data);
-  };
+  }, [demoMessages]);
 
   useEffect(() => {
     if (selectedChat) {
@@ -588,7 +588,7 @@ export default function Home() {
       <nav className="h-screen w-14 bg-[#f7f7f7] border-r border-gray-200 flex flex-col items-center pt-2 pb-2 select-none">
         {/* Logo */}
         <div className="relative flex items-center justify-center mb-4" style={{height: 48}}>
-          <img src="/Logo4.svg" alt="Logo" className="w-10 h-10 rounded-full object-contain bg-white" />
+          <Image src="/Logo4.svg" alt="Logo" width={40} height={40} className="w-10 h-10 rounded-full object-contain bg-white" />
         </div>
         {/* Icons */}
         <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
@@ -776,9 +776,11 @@ export default function Home() {
                   >
                     {/* Avatar: show profile image if available, else fallback to initial */}
                     {chat.avatarUrl ? (
-                      <img
+                      <Image
                         src={chat.avatarUrl}
                         alt={chat.name}
+                        width={44}
+                        height={44}
                         className="w-11 h-11 rounded-full object-cover bg-gray-200"
                       />
                     ) : (
