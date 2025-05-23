@@ -241,7 +241,18 @@ const CHAT_PHONES: Record<string, string> = {
 };
 
 // Hardcoded messages for Test-El-Centro
-const TEST_EL_CENTRO_MESSAGES = [
+type TestElCentroMessage = {
+  id: string;
+  sender: string;
+  phone: string;
+  content: string;
+  time: string;
+  date: string;
+  side: 'left' | 'right';
+  email?: string;
+};
+
+const TEST_EL_CENTRO_MESSAGES: TestElCentroMessage[] = [
   { id: '1', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'CVFER', time: '11:51', date: '23-10-2024', side: 'left' },
   { id: '2', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'CDERT', time: '11:54', date: '23-10-2024', side: 'left' },
   { id: '4', sender: 'Roshnag Airtel', phone: '+91 83646 47925', content: 'Hello, South Euna!', time: '08:01', date: '22-01-2025', side: 'left' },
@@ -271,7 +282,6 @@ export default function Home() {
   const [uploading, setUploading] = useState(false);
   const [userMap, setUserMap] = useState<Record<string, { name: string; phone_number: string }>>({});
   const [chatSearch, setChatSearch] = useState("");
-  const [isFiltered, setIsFiltered] = useState(false);
   const [chatLabelsState, setChatLabelsState] = useState(CHAT_LABELS);
   const [labelInput, setLabelInput] = useState<{[chatId: string]: string}>({});
   const [showLabelInput, setShowLabelInput] = useState<{[chatId: string]: boolean}>({});

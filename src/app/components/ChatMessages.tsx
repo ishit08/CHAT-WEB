@@ -1,5 +1,32 @@
-import Image from "next/image";
 import { FiPaperclip } from "react-icons/fi";
+
+interface ChatMessagesProps {
+  selectedChat: string | null;
+  messages: Message[];
+  userMap: Record<string, { name: string; phone_number: string }>;
+  currentUserId: string | null;
+  attachmentsMap: Record<string, Attachment[]>;
+  TEST_EL_CENTRO_MESSAGES: TestElCentroMessage[];
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
+}
+
+interface Attachment {
+  id?: string;
+  file_name: string;
+  file_type: string;
+  file_url: string;
+}
+
+interface TestElCentroMessage {
+  id: string;
+  sender: string;
+  phone: string;
+  content: string;
+  time: string;
+  date: string;
+  side: 'left' | 'right';
+  email?: string;
+}
 
 export default function ChatMessages({
   selectedChat,
@@ -9,15 +36,7 @@ export default function ChatMessages({
   attachmentsMap,
   TEST_EL_CENTRO_MESSAGES,
   messagesEndRef
-}: {
-  selectedChat: string | null;
-  messages: any[];
-  userMap: Record<string, { name: string; phone_number: string }>;
-  currentUserId: string | null;
-  attachmentsMap: Record<string, any[]>;
-  TEST_EL_CENTRO_MESSAGES: any[];
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
-}) {
+}: ChatMessagesProps) {
   if (selectedChat === 'Test-El-Centro') {
     let lastDate = '';
     return (

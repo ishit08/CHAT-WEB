@@ -1,6 +1,22 @@
 import { FiX } from "react-icons/fi";
 import React from "react";
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  phone_number?: string;
+};
+
+interface NewChatModalProps {
+  show: boolean;
+  onClose: () => void;
+  users: User[];
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  createNewChat: (userId: string) => void;
+}
+
 export default function NewChatModal({
   show,
   onClose,
@@ -8,14 +24,7 @@ export default function NewChatModal({
   searchQuery,
   setSearchQuery,
   createNewChat
-}: {
-  show: boolean;
-  onClose: () => void;
-  users: any[];
-  searchQuery: string;
-  setSearchQuery: (v: string) => void;
-  createNewChat: (userId: string) => void;
-}) {
+}: NewChatModalProps) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

@@ -6,6 +6,35 @@ import { BsCheckAll } from "react-icons/bs";
 import { FaPhoneAlt } from "react-icons/fa";
 import { MdGroups } from "react-icons/md";
 
+type Chat = {
+  id: string;
+  name: string;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  avatarUrl?: string;
+};
+
+interface ChatListProps {
+  chats: Chat[];
+  selectedChat: string | null;
+  setSelectedChat: (id: string) => void;
+  chatLabelsState: Record<string, { labels: string[]; numbers?: string[] }>;
+  setChatLabelsState: React.Dispatch<React.SetStateAction<Record<string, { labels: string[]; numbers?: string[] }>>>;
+  chatSearch: string;
+  setChatSearch: (v: string) => void;
+  chatSortOrder: 'asc' | 'desc';
+  setChatSortOrder: (v: 'asc' | 'desc') => void;
+  showFilterDropdown: boolean;
+  setShowFilterDropdown: (v: boolean) => void;
+  showLabelInput: { [chatId: string]: boolean };
+  setShowLabelInput: React.Dispatch<React.SetStateAction<{ [chatId: string]: boolean }>>;
+  labelInput: { [chatId: string]: string };
+  setLabelInput: React.Dispatch<React.SetStateAction<{ [chatId: string]: string }>>;
+  labelInputRefs: React.MutableRefObject<{ [chatId: string]: HTMLFormElement | null }>;
+  GROUP_CHAT_IDS: string[];
+  CHAT_PHONES: Record<string, string>;
+}
+
 export default function ChatList({
   chats,
   selectedChat,
@@ -25,7 +54,7 @@ export default function ChatList({
   labelInputRefs,
   GROUP_CHAT_IDS,
   CHAT_PHONES
-}: any) {
+}: ChatListProps) {
   return (
     <aside className="w-[360px] bg-white flex flex-col relative">
       {/* Filter/Search Bar Section */}
@@ -86,7 +115,7 @@ export default function ChatList({
       {/* Chat list: independently scrollable, fixed height below filter/search bar */}
       <div className="border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
            style={{ height: 'calc(100vh - 48px - 48px)', overflowY: 'auto' }}>
-        {chats.map((chat: any) => {
+        {chats.map((chat) => {
           const isGroup = GROUP_CHAT_IDS.includes(chat.id);
           const chatLabels = chatLabelsState[chat.id]?.labels || [];
           const chatNumbers = chatLabelsState[chat.id]?.numbers || [];
@@ -154,7 +183,7 @@ export default function ChatList({
                       className="ml-1 text-green-600 text-xs"
                       onClick={e => {
                         e.stopPropagation();
-                        setShowLabelInput((prev: any) => ({ ...prev, [chat.id]: true }));
+                        setShowLabelInput((prev) => ({ ...prev, [chat.id]: true }));
                       }}
                       tabIndex={-1}
                       type="button"

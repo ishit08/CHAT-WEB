@@ -1,6 +1,35 @@
 import { FiX } from "react-icons/fi";
 import React from "react";
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  phone_number?: string;
+};
+
+type Chat = {
+  id: string;
+  name: string;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  avatarUrl?: string;
+};
+
+interface ManageMembersModalProps {
+  show: boolean;
+  onClose: () => void;
+  allPossibleMembers: (User & { isDemo: boolean })[];
+  chatMembers: string[];
+  setChatMembers: (v: string[]) => void;
+  selectedChat: string | null;
+  currentUserId: string | null;
+  fetchChats: (userId: string) => Promise<void>;
+  setChatMemberNames: (names: string[]) => void;
+  supabase: any;
+  DEMO_CONTACTS: Chat[];
+}
+
 export default function ManageMembersModal({
   show,
   onClose,
@@ -13,19 +42,7 @@ export default function ManageMembersModal({
   setChatMemberNames,
   supabase,
   DEMO_CONTACTS
-}: {
-  show: boolean;
-  onClose: () => void;
-  allPossibleMembers: any[];
-  chatMembers: string[];
-  setChatMembers: (v: string[]) => void;
-  selectedChat: string | null;
-  currentUserId: string | null;
-  fetchChats: (userId: string) => Promise<void>;
-  setChatMemberNames: (names: string[]) => void;
-  supabase: any;
-  DEMO_CONTACTS: any[];
-}) {
+}: ManageMembersModalProps) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

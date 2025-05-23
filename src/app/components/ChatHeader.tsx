@@ -5,19 +5,29 @@ import { FiSearch } from "react-icons/fi";
 import { IoPersonCircleSharp } from "react-icons/io5";
 import Image from "next/image";
 
+type Chat = {
+  id: string;
+  name: string;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  avatarUrl?: string;
+};
+
+interface ChatHeaderProps {
+  selectedChat: string | null;
+  chats: Chat[];
+  chatMemberNames: string[];
+  GROUP_CHAT_IDS: string[];
+  setShowManageMembersModal: (v: boolean) => void;
+}
+
 export default function ChatHeader({
   selectedChat,
   chats,
   chatMemberNames,
   GROUP_CHAT_IDS,
   setShowManageMembersModal
-}: {
-  selectedChat: string | null;
-  chats: any[];
-  chatMemberNames: string[];
-  GROUP_CHAT_IDS: string[];
-  setShowManageMembersModal: (v: boolean) => void;
-}) {
+}: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
       <div className="flex items-center gap-1">
