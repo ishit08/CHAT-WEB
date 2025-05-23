@@ -57,7 +57,7 @@ export default function ManageMembersModal({
             e.preventDefault();
             if (!selectedChat) return;
             if (!selectedChat.startsWith('demo-') && !DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
-              const { data: current, error: err } = await supabase
+              const { data: current } = await supabase
                 .from("chat_members")
                 .select("user_id")
                 .eq("chat_id", selectedChat);

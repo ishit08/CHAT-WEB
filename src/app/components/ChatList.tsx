@@ -82,7 +82,7 @@ export default function ChatList({
             <button
               className="flex items-center gap-1 font-semibold bg-white border-none p-0 text-xs"
               style={{ color: '#199455' }}
-              onClick={() => setShowFilterDropdown((v: boolean) => !v)}
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
               type="button"
             >
               <IoFilterSharp className="w-2.5 h-2.5" style={{ color: '#199455' }} />
@@ -195,15 +195,15 @@ export default function ChatList({
                         onSubmit={e => {
                           e.preventDefault();
                           if (labelInput[chat.id]?.trim()) {
-                            setChatLabelsState((prev: any) => ({
+                            setChatLabelsState((prev: Record<string, { labels: string[]; numbers?: string[] }>) => ({
                               ...prev,
                               [chat.id]: {
                                 ...prev[chat.id],
                                 labels: [...(prev[chat.id]?.labels || []), labelInput[chat.id].trim()]
                               }
                             }));
-                            setLabelInput((prev: any) => ({ ...prev, [chat.id]: "" }));
-                            setShowLabelInput((prev: any) => ({ ...prev, [chat.id]: false }));
+                            setLabelInput((prev: Record<string, string>) => ({ ...prev, [chat.id]: "" }));
+                            setShowLabelInput((prev: Record<string, boolean>) => ({ ...prev, [chat.id]: false }));
                           }
                         }}
                         className="inline"

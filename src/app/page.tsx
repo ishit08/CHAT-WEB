@@ -559,7 +559,7 @@ export default function Home() {
         // Sanitize file name for Supabase Storage
         const safeFileName = attachment.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
         const filePath = `${messageId}/${safeFileName}`;
-        const { data: fileData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('attachments')
           .upload(filePath, attachment);
         if (uploadError) {
@@ -695,7 +695,7 @@ export default function Home() {
         .in("id", userIds);
       if (userError || !users) return;
       const map: Record<string, { name: string; phone_number: string }> = {};
-      users.forEach((u: any) => {
+      users.forEach((u: { id: string; name: string; phone_number: string }) => {
         map[u.id] = { name: u.name, phone_number: u.phone_number };
       });
       setUserMap(map);
