@@ -41,6 +41,8 @@ import { FaPhoneAlt } from "react-icons/fa";
 import { IoPersonCircle } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi";
 import { IoPersonCircleSharp } from "react-icons/io5";
+import { MdGroup } from "react-icons/md";
+import { IoPerson } from "react-icons/io5";
 
 type Chat = {
   id: string;
@@ -259,6 +261,7 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachmentsMap, setAttachmentsMap] = useState<Record<string, any[]>>({});
   const [uploading, setUploading] = useState(false);
+  const [userMap, setUserMap] = useState<Record<string, { name: string; phone_number: string }>>({});
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -644,6 +647,33 @@ export default function Home() {
     }
   }, [messages, selectedChat]);
 
+  // Fetch all users in the chat and build a map from user_id to user info
+  useEffect(() => {
+    async function fetchChatUsers() {
+      if (!selectedChat) return;
+      // Get all user_ids in this chat
+      const { data: members, error } = await supabase
+        .from("chat_members")
+        .select("user_id")
+        .eq("chat_id", selectedChat);
+      if (error || !members) return;
+      const userIds = members.map((m: { user_id: string }) => m.user_id);
+      if (userIds.length === 0) return;
+      // Fetch user info for all user_ids
+      const { data: users, error: userError } = await supabase
+        .from("users")
+        .select("id, name, phone_number")
+        .in("id", userIds);
+      if (userError || !users) return;
+      const map: Record<string, { name: string; phone_number: string }> = {};
+      users.forEach((u: any) => {
+        map[u.id] = { name: u.name, phone_number: u.phone_number };
+      });
+      setUserMap(map);
+    }
+    fetchChatUsers();
+  }, [selectedChat]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -845,7 +875,15 @@ export default function Home() {
                     onClick={() => setSelectedChat(chat.id)}
                   >
                     {/* Avatar: show profile image if available, else fallback to initial */}
-                    {chat.avatarUrl ? (
+                    {["Test Skope Final 5", "Test El Centro", "Testing group"].includes(chat.name) ? (
+                      <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
+                        <MdGroup size={22} className="text-white" />
+                      </div>
+                    ) : chat.name === "+91 9999999999" ? (
+                      <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
+                        <IoPerson size={18} className="text-white" />
+                      </div>
+                    ) : chat.avatarUrl ? (
                       <Image
                         src={chat.avatarUrl}
                         alt={chat.name}
@@ -889,7 +927,11 @@ export default function Home() {
                             <span key={num} className="text-[10px] font-bold text-gray-500">{num}</span>
                           ))}
                         </div>
-                        <IoPersonCircle size={18} className="text-gray-200 mb-0.5" />
+                        {chat.name === "Test El Centro" ? (
+                          <Image src="/Logo2.svg" alt="Logo2" width={18} height={18} className="rounded-full" />
+                        ) : (
+                          <IoPersonCircle size={18} className="text-gray-200 mb-0.5" />
+                        )}
                         <span className="text-[10px] text-gray-400 whitespace-nowrap">{chat.lastMessageTime}</span>
                       </div>
                     </div>
@@ -903,8 +945,16 @@ export default function Home() {
             {/* Chat header */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
               <div className="flex items-center gap-1">
-                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">
-                  {selectedChat ? chats.find(c => c.id === selectedChat)?.name.charAt(0) : "?"}
+                <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: (selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro") ? '#e3e6ea' : '#f1f4f6' }}>
+                  {selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro" ? (
+                    <MdGroup size={16} className="text-white" />
+                  ) : selectedChat && chats.find(c => c.id === selectedChat)?.name === "+91 9999999999" ? (
+                    <IoPerson size={20} className="text-white" />
+                  ) : (
+                    <span className="text-sm font-bold text-gray-500">
+                      {selectedChat ? chats.find(c => c.id === selectedChat)?.name.charAt(0) : "?"}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <div className="font-semibold text-sm text-gray-900 leading-tight">
@@ -921,7 +971,14 @@ export default function Home() {
                 {selectedChat && GROUP_CHAT_IDS.includes(selectedChat) && (
                   <div className="flex items-center -space-x-3 mr-2">
                     {[0,1,2,3,4].map((i) => (
-                      <IoPersonCircleSharp key={i} size={28} className="text-gray-300 bg-white rounded-full border-2 border-white" style={{ zIndex: 10 - i }} />
+                      i === 4 ? (
+                        <div className="relative">
+                          <Image src="/Logo2.svg" alt="Logo2" width={28} height={28} className="rounded-full border-2 border-white" />
+                          <span className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                      ) : (
+                        <IoPersonCircleSharp key={i} size={28} className="text-gray-300 bg-white rounded-full border-2 border-white" style={{ zIndex: 10 - i }} />
+                      )
                     ))}
                     <span className="ml-2 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 border border-white" style={{zIndex: 0}}>+3</span>
                   </div>
@@ -951,9 +1008,11 @@ export default function Home() {
                                   <span className="font-bold text-green-600 text-[10px]">{message.sender}</span>
                                   <span className="text-[10px] text-gray-400 font-semibold">{message.phone}</span>
                                 </div>
-                                <div className="flex items-end justify-between w-full">
-                                  <div>{message.content}</div>
-                                  <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap">{message.time}</span>
+                                <div className="flex items-end justify-between w-full gap-2">
+                                  <div className="break-words flex-1">{message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}</div>
+                                  <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap flex-shrink-0">
+                                    {message.time}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -965,51 +1024,74 @@ export default function Home() {
                   ];
                 })()
               ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
-                  >
-                    <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
-                      {attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 && (
-                        <div className="mb-2">
-                          {attachmentsMap[message.id].map(att => (
-                            att.file_type && att.file_type.startsWith('image/') ? (
-                              <img
-                                key={att.id}
-                                src={att.file_url}
-                                alt={att.file_name}
-                                className="mb-1 max-w-xs rounded border"
-                                style={{ maxHeight: 200 }}
-                              />
-                            ) : att.file_type && att.file_type.startsWith('video/') ? (
-                              <video key={att.id} controls width="250" className="mb-1">
-                                <source src={att.file_url} type={att.file_type} />
-                                Your browser does not support the video tag.
-                              </video>
-                            ) : (
-                              <a
-                                key={att.id}
-                                href={att.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-1"
-                              >
-                                <FiPaperclip size={16} />
-                                <span className="text-sm">{att.file_name}</span>
-                              </a>
-                            )
-                          ))}
+                messages.map((message) => {
+                  // Find sender name and phone for this message
+                  let senderName = userMap[message.sender_id]?.name || (message.sender_id === currentUserId ? "You" : "User");
+                  let senderPhone = userMap[message.sender_id]?.phone_number || "";
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.sender_id === currentUserId ? "justify-end" : "justify-start"} mb-2`}
+                    >
+                      <div className={`max-w-[60%] ${message.sender_id === currentUserId ? "self-end" : "self-start"}`}> 
+                        <div className={`rounded-lg px-3 py-2 shadow text-gray-900 text-sm ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}
+                             style={{ minWidth: 120, position: 'relative' }}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-green-600 text-xs">
+                              {senderName}
+                            </span>
+                            {senderPhone && (
+                              <span className="text-[10px] text-gray-400 font-semibold">{senderPhone}</span>
+                            )}
+                          </div>
+                          <div className="flex items-end justify-between w-full gap-2">
+                            <div className="break-words flex-1">{message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}</div>
+                            <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap flex-shrink-0">
+                              {message.created_at ? new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      {/* Show content or a placeholder if content is empty and there are attachments */}
-                      {message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}
+                        {attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 && (
+                          <div className="mb-2">
+                            {attachmentsMap[message.id].map(att => {
+                              if (att.file_type && att.file_type.startsWith('image/')) {
+                                return (
+                                  <img
+                                    key={att.id}
+                                    src={att.file_url}
+                                    alt={att.file_name}
+                                    className="mb-1 max-w-xs rounded border"
+                                    style={{ maxHeight: 200 }}
+                                  />
+                                );
+                              } else if (att.file_type && att.file_type.startsWith('video/')) {
+                                return (
+                                  <video key={att.id} controls width="250" className="mb-1">
+                                    <source src={att.file_url} type={att.file_type} />
+                                    Your browser does not support the video tag.
+                                  </video>
+                                );
+                              } else {
+                                return (
+                                  <a
+                                    key={att.id}
+                                    href={att.file_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-1"
+                                  >
+                                    <FiPaperclip size={16} />
+                                    <span className="text-sm">{att.file_name}</span>
+                                  </a>
+                                );
+                              }
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
-                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
             {/* Message input */}
@@ -1100,9 +1182,11 @@ export default function Home() {
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
               <RiListSettingsLine size={18} />
             </button>
-            <button className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
-              <RiChatAiLine size={22} />
-            </button>
+            {!showNewChatModal && (
+              <button className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
+                <RiChatAiLine size={22} />
+              </button>
+            )}
           </aside>
         </div>
       </div>
