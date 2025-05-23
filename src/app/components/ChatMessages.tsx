@@ -1,24 +1,19 @@
 import { FiPaperclip } from "react-icons/fi";
 import Image from 'next/image';
 
-interface ChatMessagesProps {
-  selectedChat: string | null;
-  messages: Message[];
-  userMap: Record<string, { name: string; phone_number: string }>;
-  currentUserId: string | null;
-  attachmentsMap: Record<string, Attachment[]>;
-  TEST_EL_CENTRO_MESSAGES: TestElCentroMessage[];
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
-}
+type Message = {
+  id: string;
+  content: string;
+  sender_id: string;
+  created_at: string;
+  attachment?: {
+    name: string;
+    type: string;
+    url: string;
+  };
+};
 
-interface Attachment {
-  id?: string;
-  file_name: string;
-  file_type: string;
-  file_url: string;
-}
-
-interface TestElCentroMessage {
+type TestElCentroMessage = {
   id: string;
   sender: string;
   phone: string;
@@ -27,6 +22,23 @@ interface TestElCentroMessage {
   date: string;
   side: 'left' | 'right';
   email?: string;
+};
+
+interface Attachment {
+  id?: string;
+  file_name: string;
+  file_type: string;
+  file_url: string;
+}
+
+interface ChatMessagesProps {
+  selectedChat: string | null;
+  messages: Message[];
+  userMap: Record<string, { name: string; phone_number: string }>;
+  currentUserId: string | null;
+  attachmentsMap: Record<string, Attachment[]>;
+  TEST_EL_CENTRO_MESSAGES: TestElCentroMessage[];
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function ChatMessages({
