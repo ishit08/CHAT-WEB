@@ -42,6 +42,15 @@ import { IoPersonCircle } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi";
 import { IoPersonCircleSharp } from "react-icons/io5";
 import { IoPerson } from "react-icons/io5";
+import Sidebar from "./components/Sidebar";
+import ChatHeader from "./components/ChatHeader";
+import ChatList from "./components/ChatList";
+import ChatMessages from "./components/ChatMessages";
+import ChatInput from "./components/ChatInput";
+import RightSidebar from "./components/RightSidebar";
+import NewChatModal from "./components/NewChatModal";
+import ManageMembersModal from "./components/ManageMembersModal";
+import TopBar from "./components/TopBar";
 
 type Chat = {
   id: string;
@@ -781,671 +790,106 @@ export default function Home() {
   return (
     <div className="h-screen w-full bg-[#f0f2f5] flex">
       {/* Pixel-perfect Vertical Sidebar */}
-      <nav className="h-screen w-14 bg-[#f7f7f7] border-r border-gray-200 flex flex-col items-center pt-2 pb-2 select-none">
-        {/* Logo */}
-        <div className="relative flex items-center justify-center mb-4" style={{height: 48}}>
-          <Image src="/Logo4.svg" alt="Logo" width={40} height={40} className="w-10 h-10 rounded-full object-contain bg-white" />
-        </div>
-        {/* Icons */}
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <AiFillHome size={20} />
-        </button>
-        {/* Divider after Home */}
-        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
-
-        <button className="flex items-center justify-center w-10 h-8 rounded-lg bg-gray-200">
-          <BsChatDotsFill size={20} className="text-green-600" />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <IoTicket size={20} />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <FaChartLine size={20} />
-        </button>
-        {/* Divider after Line Chart */}
-        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
-
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <FaListUl size={20} />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <HiMegaphone size={20} />
-        </button>
-        <div className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200 relative">
-          <LuNetwork size={20} className="text-gray-500" style={{ transform: 'scaleX(-1)' }} />
-          <BsStars size={12} className="absolute right-0 top-1 text-yellow-400" />
-        </div>
-        {/* Divider after Network */}
-        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
-
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <RiContactsBookFill size={18} />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <RiFolderImageFill size={18} />
-        </button>
-        {/* Divider after Gallery */}
-        <div className="self-stretch border-b border-gray-200 my-1 mx-2" />
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <MdChecklist size={18} />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-200">
-          <IoIosSettings size={18} />
-        </button>
-
-        <div className="flex-1" />
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500">
-          <TbStarsFilled size={18} />
-        </button>
-        <button className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500">
-          <LuSquareChevronRight size={18} />
-        </button>
-    
-      </nav>
+      <Sidebar />
       {/* Main content area (right side) */}
       <div className="flex-1 flex flex-col h-full min-h-0">
         {/* Top Bar */}
-        <div className="w-full h-12 bg-white border-b border-gray-200 flex items-center justify-between z-30 px-6">
-          <div className="flex items-center gap-2">
-            <BsChatDotsFill className="w-5 h-5" style={{ color: '#8B929C' }} />
-            <span className="font-bold text-lg text-gray-400">chats</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100 text-sm font-bold">
-              <TbRefreshDot className="w-4 h-4" /> Refresh
-            </button>
-            <button className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100 text-sm font-bold">
-              <IoMdHelpCircleOutline className="w-4 h-4" /> Help
-            </button>
-            <div className="flex items-center gap-1 px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 text-sm font-bold">
-              <span className="w-5 h-5 flex items-center justify-center rounded-full bg-yellow-100 mr-1">
-                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-              </span>
-              5 / 6 phones
-              <HiChevronUpDown className="w-4 h-4 ml-1" />
-            </div>
-            <button className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
-              <MdInstallDesktop className="w-4 h-4" />
-            </button>
-            <button className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
-              <BiSolidBellOff className="w-4 h-4" />
-            </button>
-            <div className="flex items-center justify-center px-2 py-1 border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-100">
-              <BsStars className="w-4 h-4 text-yellow-300" />
-              <FiList className="w-4 h-4 text-gray-500" />
-            </div>
-          </div>
-        </div>
+        <TopBar />
         <div className="flex flex-1 w-full h-[calc(100vh-3rem)]">
           {/* Sidebar */}
           <aside className="w-[360px] bg-white flex flex-col relative">
-            {/* Filter/Search Bar Section */}
-            <div className="flex items-center justify-between px-3 py-3 bg-white border-b border-gray-100 text-xs border-r border-gray-200">
-              {/* Left: Custom filter and Save */}
-              <div className="flex items-center gap-x-1">
-                <button className="flex items-center gap-1 font-semibold bg-white px-1 py-0.5 rounded border border-transparent text-xs" style={{ color: '#199455' }}>
-                  <HiFolderArrowDown className="w-3 h-3" style={{ color: '#199455' }} />
-                  Custom filter
-                </button>
-                <button className="bg-white border border-gray-300 px-1 py-0.5 rounded text-gray-700 text-xs shadow-sm">Save</button>
-              </div>
-              {/* Right: Search and Filtered */}
-              <div className="flex items-center gap-x-2">
-                <div className="flex items-center bg-white border border-gray-300 px-1 py-0.5 rounded gap-x-1">
-                  <svg width="8" height="8" fill="none" viewBox="0 0 24 24" className="w-2 h-2 text-gray-700"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <input
-                    className="bg-transparent outline-none text-xs text-gray-700 placeholder-gray-700 w-10"
-                    placeholder="Search"
-                    value={chatSearch}
-                    onChange={e => setChatSearch(e.target.value)}
-                  />
-                </div>
-                <div className="relative bg-white border border-gray-300 px-1 py-0.5 rounded flex items-center ml-1">
-                  <button
-                    className="flex items-center gap-1 font-semibold bg-white border-none p-0 text-xs"
-                    style={{ color: '#199455' }}
-                    onClick={() => setShowFilterDropdown(v => !v)}
-                    type="button"
-                  >
-                    <IoFilterSharp className="w-2.5 h-2.5" style={{ color: '#199455' }} />
-                    Filtered
-                  </button>
-                  {showFilterDropdown && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow z-50 text-xs">
-                      <button
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${chatSortOrder === 'asc' ? 'font-bold text-green-600' : ''}`}
-                        onClick={() => { setChatSortOrder('asc'); setShowFilterDropdown(false); }}
-                      >A-Z</button>
-                      <button
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${chatSortOrder === 'desc' ? 'font-bold text-green-600' : ''}`}
-                        onClick={() => { setChatSortOrder('desc'); setShowFilterDropdown(false); }}
-                      >Z-A</button>
-                    </div>
-                  )}
-                  <span
-                    className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center rounded-full text-base cursor-pointer"
-                    style={{ background: '#5BA16F', color: 'white' }}
-                    onClick={() => {
-                      setShowFilterDropdown(false);
-                      setChatSortOrder('asc');
-                      setChatSearch("");
-                    }}
-                  >×</span>
-                </div>
-              </div>
-            </div>
             {/* New Chat Modal */}
-            {showNewChatModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg w-[400px] max-h-[600px] flex flex-col">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-semibold">New Chat</h2>
-                    <button 
-                      onClick={() => setShowNewChatModal(false)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <FiX size={24} />
-                    </button>
-                  </div>
-                  <div className="p-4 border-b">
-                    <input
-                      type="text"
-                      placeholder="Search users..."
-                      className="w-full px-4 py-2 border rounded-lg"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex-1 overflow-y-auto">
-                    {users
-                      .filter(user => 
-                        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map(user => (
-                        <div
-                          key={user.id}
-                          className="p-4 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-                          onClick={() => createNewChat(user.id)}
-                        >
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold text-gray-500 uppercase">
-                            {user.name.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                            {user.phone_number && (
-                              <div className="text-xs text-gray-400">{user.phone_number}</div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            <NewChatModal
+              show={showNewChatModal}
+              onClose={() => setShowNewChatModal(false)}
+              users={users}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              createNewChat={createNewChat}
+            />
 
             {/* Chat list: independently scrollable, fixed height below filter/search bar */}
-            <div className="border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                 style={{ height: 'calc(100vh - 48px - 48px)', overflowY: 'auto' }}>
-              {filteredChats.map((chat) => {
-                const isGroup = GROUP_CHAT_IDS.includes(chat.id);
-                const chatLabels = chatLabelsState[chat.id]?.labels || [];
-                const chatNumbers = chatLabelsState[chat.id]?.numbers || [];
-                const phone = CHAT_PHONES[chat.id] || "";
-                // Blue double tick for these chats
-                const blueTickIds = ["Yasin-3", "Skope-Demo", "demo-demo15"];
-                const isBlueTick = blueTickIds.includes(chat.id);
-                return (
-                  <div
-                    key={chat.id}
-                    className={`flex items-center gap-2 px-2 py-2 hover:bg-[#e9edef] cursor-pointer border-b border-gray-100 ${selectedChat === chat.id ? "bg-[#e9edef]" : ""}`}
-                    style={{ minHeight: 48 }}
-                    onClick={() => setSelectedChat(chat.id)}
-                  >
-                    {/* Avatar: show profile image if available, else fallback to initial */}
-                    {["Test Skope Final 5", "Test El Centro", "Testing group"].includes(chat.name) ? (
-                      <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
-                        <MdGroups size={22} className="text-white" />
-                      </div>
-                    ) : chat.name === "+91 9999999999" ? (
-                      <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
-                        <IoPerson size={18} className="text-white" />
-                      </div>
-                    ) : chat.avatarUrl ? (
-                      <Image
-                        src={chat.avatarUrl}
-                        alt={chat.name}
-                        width={44}
-                        height={44}
-                        className="w-11 h-11 rounded-full object-cover bg-gray-200"
-                      />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center text-base font-bold text-gray-500">
-                        {chat.name.charAt(0)}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0 flex flex-row items-stretch">
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="font-semibold text-xs text-gray-900 truncate">{chat.name}</div>
-                        <div className="flex items-center gap-1">
-                          {/* Double tick for non-group chats */}
-                          {!isGroup && (
-                            <BsCheckAll size={14} color={isBlueTick ? "#199455" : "#8BC34A"} className="inline-block mr-1" />
-                          )}
-                          <div className="text-xs text-gray-500 truncate">{chat.lastMessage}</div>
-                        </div>
-                        {/* Phone number below */}
-                        {phone && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <div className="flex items-center rounded-full bg-gray-100 px-2 py-0.5" style={{ minHeight: 10 }}>
-                              <FaPhoneAlt size={8} className="text-gray-400 mr-1" />
-                              <span className="text-[8px] text-gray-400 font-medium">{phone}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end justify-between min-w-[60px] ml-2">
-                        <div className="flex flex-wrap gap-1 mb-0.5">
-                          {/* Render labels */}
-                          {chatLabels.map((label) => (
-                            <span key={label} className={`px-1 py-0.5 rounded text-[10px] font-semibold ${label === 'Demo' ? 'bg-orange-100 text-orange-500' : label === 'internal' ? 'bg-green-100 text-green-600' : label === 'Signup' ? 'bg-green-100 text-green-600' : label === 'Content' ? 'bg-green-100 text-green-600' : label === 'Dont Send' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'}`}>{label}</span>
-                          ))}
-                          {/* Add label button and input */}
-                          <button
-                            className="ml-1 text-green-600 text-xs"
-                            onClick={e => {
-                              e.stopPropagation();
-                              setShowLabelInput(prev => ({ ...prev, [chat.id]: true }));
-                            }}
-                            tabIndex={-1}
-                            type="button"
-                          >+
-                          </button>
-                          {showLabelInput[chat.id] && (
-                            <form
-                              ref={el => { labelInputRefs.current[chat.id] = el; }}
-                              onSubmit={e => {
-                                e.preventDefault();
-                                if (labelInput[chat.id]?.trim()) {
-                                  setChatLabelsState(prev => ({
-                                    ...prev,
-                                    [chat.id]: {
-                                      ...prev[chat.id],
-                                      labels: [...(prev[chat.id]?.labels || []), labelInput[chat.id].trim()]
-                                    }
-                                  }));
-                                  setLabelInput(prev => ({ ...prev, [chat.id]: "" }));
-                                  setShowLabelInput(prev => ({ ...prev, [chat.id]: false }));
-                                }
-                              }}
-                              className="inline"
-                            >
-                              <input
-                                className="border px-1 text-xs rounded w-16"
-                                value={labelInput[chat.id] || ""}
-                                onChange={e => setLabelInput(prev => ({ ...prev, [chat.id]: e.target.value }))}
-                                autoFocus
-                                onClick={e => e.stopPropagation()}
-                              />
-                            </form>
-                          )}
-                          {/* Render numbers */}
-                          {chatNumbers.map((num) => (
-                            <span key={num} className="text-[10px] font-bold text-gray-500">{num}</span>
-                          ))}
-                        </div>
-                        {chat.name === "Test El Centro" ? (
-                          <Image src="/Logo2.svg" alt="Logo2" width={18} height={18} className="rounded-full" />
-                        ) : (
-                          <IoPersonCircle size={18} className="text-gray-200 mb-0.5" />
-                        )}
-                        <span className="text-[10px] text-gray-400 whitespace-nowrap">{chat.lastMessageTime}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <ChatList
+              chats={filteredChats}
+              selectedChat={selectedChat}
+              setSelectedChat={setSelectedChat}
+              chatLabelsState={chatLabelsState}
+              setChatLabelsState={setChatLabelsState}
+              chatSearch={chatSearch}
+              setChatSearch={setChatSearch}
+              chatSortOrder={chatSortOrder}
+              setChatSortOrder={setChatSortOrder}
+              showFilterDropdown={showFilterDropdown}
+              setShowFilterDropdown={setShowFilterDropdown}
+              showLabelInput={showLabelInput}
+              setShowLabelInput={setShowLabelInput}
+              labelInput={labelInput}
+              setLabelInput={setLabelInput}
+              labelInputRefs={labelInputRefs}
+              GROUP_CHAT_IDS={GROUP_CHAT_IDS}
+              CHAT_PHONES={CHAT_PHONES}
+            />
           </aside>
           {/* Main chat area */}
           <main className="flex-1 flex flex-col h-full min-h-0">
-            {/* Chat header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
-              <div className="flex items-center gap-1">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: (selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro") ? '#e3e6ea' : '#f1f4f6' }}>
-                  {selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro" ? (
-                    <MdGroups size={16} className="text-white" />
-                  ) : selectedChat && chats.find(c => c.id === selectedChat)?.name === "+91 9999999999" ? (
-                    <IoPerson size={20} className="text-white" />
-                  ) : (
-                    <span className="text-sm font-bold text-gray-500">
-                      {selectedChat ? chats.find(c => c.id === selectedChat)?.name.charAt(0) : "?"}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <div className="font-semibold text-sm text-gray-900 leading-tight">
-                    {selectedChat ? chats.find(c => c.id === selectedChat)?.name : "Select a chat"}
-                  </div>
-                  <div className="text-xs text-gray-500 leading-none">
-                    {chatMemberNames.length > 2
-                      ? chatMemberNames.join(", ")
-                      : (selectedChat === "Test-El-Centro"
-                          ? "Roshnag Airtel, Roshnag Jio, Bharat Kumar Ramesh, Periskope"
-                          : "Online")}
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                {selectedChat && GROUP_CHAT_IDS.includes(selectedChat) && (
-                  <div className="flex items-center -space-x-3 mr-2">
-                    {[0,1,2,3,4].map((i) => (
-                      i === 4 ? (
-                        <div className="relative" key={i}>
-                          <Image src="/Logo2.svg" alt="Logo2" width={28} height={28} className="rounded-full border-2 border-white" />
-                          <span className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></span>
-                        </div>
-                      ) : (
-                        <IoPersonCircleSharp key={i} size={28} className="text-gray-300 bg-white rounded-full border-2 border-white" style={{ zIndex: 10 - i }} />
-                      )
-                    ))}
-                    <span className="ml-2 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 border border-white" style={{zIndex: 0}}>+3</span>
-                  </div>
-                )}
-                <button className="text-gray-400 hover:text-green-500"><HiSparkles size={20} /></button>
-                <button className="text-gray-400 hover:text-green-500"><FiSearch size={16} /></button>
-                <button
-                  className="ml-2 px-2 py-1 border border-gray-300 rounded text-xs text-gray-600 hover:bg-gray-100"
-                  onClick={() => setShowManageMembersModal(true)}
-                >
-                  Manage Members
-                </button>
-              </div>
-            </div>
+            
+            <ChatHeader
+              selectedChat={selectedChat}
+              chats={chats}
+              chatMemberNames={chatMemberNames}
+              GROUP_CHAT_IDS={GROUP_CHAT_IDS}
+              setShowManageMembersModal={setShowManageMembersModal}
+            />
             {/* Messages area */}
             <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6 bg-[#ece5dd] flex flex-col gap-1">
-              {selectedChat === 'Test-El-Centro' ? (
-                (() => {
-                  let lastDate = '';
-                  return [
-                    ...TEST_EL_CENTRO_MESSAGES.map((message) => {
-                      const showDate = message.date !== lastDate;
-                      lastDate = message.date;
-                      return (
-                        <div key={message.id + message.time}>
-                          {showDate && (
-                            <div className="text-center text-[10px] text-gray-400 font-semibold my-1">{message.date}</div>
-                          )}
-                          <div className={`flex ${message.side === 'right' ? 'justify-end' : 'justify-start'}`}> 
-                            <div className={`max-w-[60%] ${message.side === 'right' ? 'self-end' : 'self-start'}`}> 
-                              <div className={`rounded-lg px-2 py-1 shadow text-gray-900 text-xs ${message.side === 'right' ? 'bg-green-100' : 'bg-white'}`}> 
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-bold text-green-600 text-[10px]">{message.sender}</span>
-                                  <span className="text-[10px] text-gray-400 font-semibold">{message.phone}</span>
+              <ChatMessages
+                selectedChat={selectedChat}
+                messages={messages}
+                userMap={userMap}
+                currentUserId={currentUserId}
+                attachmentsMap={attachmentsMap}
+                TEST_EL_CENTRO_MESSAGES={TEST_EL_CENTRO_MESSAGES}
+                messagesEndRef={messagesEndRef}
+              />
                                 </div>
-                                <div className="flex items-end justify-between w-full gap-2">
-                                  <div className="break-words flex-1">{message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}</div>
-                                  <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap flex-shrink-0">
-                                    {message.time}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    }),
-                    <div key="messages-end" ref={messagesEndRef} />
-                  ];
-                })()
-              ) : (
-                messages.map((message) => {
-                  // Find sender name and phone for this message
-                  let senderName = userMap[message.sender_id]?.name || (message.sender_id === currentUserId ? "You" : "User");
-                  let senderPhone = userMap[message.sender_id]?.phone_number || "";
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender_id === currentUserId ? "justify-end" : "justify-start"} mb-2`}
-                    >
-                      <div className={`max-w-[60%] ${message.sender_id === currentUserId ? "self-end" : "self-start"}`}> 
-                        <div className={`rounded-lg px-3 py-2 shadow text-gray-900 text-sm ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}
-                             style={{ minWidth: 120, position: 'relative' }}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-green-600 text-xs">
-                              {senderName}
-                            </span>
-                            {senderPhone && (
-                              <span className="text-[10px] text-gray-400 font-semibold">{senderPhone}</span>
-                            )}
-                          </div>
-                          <div className="flex items-end justify-between w-full gap-2">
-                            <div className="break-words flex-1">{message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}</div>
-                            <span className="text-[10px] text-gray-400 ml-2 whitespace-nowrap flex-shrink-0">
-                              {message.created_at ? new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
-                            </span>
-                          </div>
-                        </div>
-                        {attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 && (
-                          <div className="mb-2">
-                            {attachmentsMap[message.id].map(att => {
-                              if (att.file_type && att.file_type.startsWith('image/')) {
-                                return (
-                                  <img
-                                    key={att.id}
-                                    src={att.file_url}
-                                    alt={att.file_name}
-                                    className="mb-1 max-w-xs rounded border"
-                                    style={{ maxHeight: 200 }}
-                                  />
-                                );
-                              } else if (att.file_type && att.file_type.startsWith('video/')) {
-                                return (
-                                  <video key={att.id} controls width="250" className="mb-1">
-                                    <source src={att.file_url} type={att.file_type} />
-                                    Your browser does not support the video tag.
-                                  </video>
-                                );
-                              } else {
-                                return (
-                                  <a
-                                    key={att.id}
-                                    href={att.file_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-1"
-                                  >
-                                    <FiPaperclip size={16} />
-                                    <span className="text-sm">{att.file_name}</span>
-                                  </a>
-                                );
-                              }
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
             {/* Message input */}
-            <form onSubmit={handleSendMessage} className="flex flex-col gap-0 px-0 pt-4 pb-4 bg-white border-t border-gray-200">
-              <div className="flex items-center w-full px-7 mb-4 relative">
-                {attachment && (
-                  <div className="absolute bottom-full left-7 mb-2 bg-gray-100 rounded-lg p-2 flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{attachment.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setAttachment(null)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <FiX size={16} />
-                    </button>
-                  </div>
-                )}
-                <input
-                  className="flex-1 bg-transparent pt-0 pb-2 outline-none text-gray-800 border-none text-base font-bold leading-tight placeholder:font-bold placeholder:text-gray-400 placeholder:leading-tight"
-                  placeholder="Message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                />
-                <div className="flex flex-col items-center ml-2">
-                  <button type="submit" className="p-0 m-0 bg-transparent rounded-none shadow-none flex items-center justify-center">
-                    <IoSend size={28} color="#199455" />
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-6 mt-0 px-7">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  accept="image/*,video/*,.pdf,.txt"
-                />
-                <button 
-                  type="button" 
-                  className="text-[#434B57] hover:text-green-600 focus:outline-none"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <FiPaperclip size={22} />
-                </button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FaRegSmile size={22} /></button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FiClock size={22} /></button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><AiOutlineHistory size={22} /></button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><HiOutlineSparkles size={22} /></button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><RiBarChartBoxFill size={22} /></button>
-                <button type="button" className="text-[#434B57] hover:text-green-600 focus:outline-none"><FaMicrophone size={18} /></button>
-                <div className="ml-auto flex items-center bg-white rounded-lg shadow-sm px-3 py-1 gap-2 border border-gray-200" style={{ minWidth: 140 }}>
-                  <Image src="/Logo2.svg" alt="Periskope Logo" width={22} height={22} className="rounded-full" />
-                  <span className="font-bold text-base text-black">Periskope</span>
-                  <HiChevronUpDown className="text-gray-400 ml-4" size={16} />
-                </div>
-              </div>
-            </form>
+            <ChatInput
+              newMessage={newMessage}
+              setNewMessage={setNewMessage}
+              handleSendMessage={handleSendMessage}
+              attachment={attachment}
+              setAttachment={setAttachment}
+              fileInputRef={fileInputRef}
+              handleFileSelect={handleFileSelect}
+              uploading={uploading}
+            />
           </main>
           {/* Right Sidebar */}
-          <aside className="w-14 bg-white border-l border-gray-200 flex flex-col items-center py-4 gap-2">
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <TbSquareChevronLeft size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <LuRefreshCw size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <LuPencilLine size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <VscListSelection size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <RiListCheck2 size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <DiHtml5Connectivity size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <MdGroups size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <FaAt size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <RiFolderImageFill size={18} />
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <RiListSettingsLine size={18} />
-            </button>
-            {!showNewChatModal && (
-              <button
-                className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
-                onClick={() => setShowNewChatModal(true)}
-              >
-                <RiChatAiLine size={22} />
-              </button>
-            )}
-          </aside>
-        </div>
-      </div>
-      {/* Manage Members Modal */}
-      {showManageMembersModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-[400px] max-h-[600px] flex flex-col">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Manage Members</h2>
-              <button onClick={() => setShowManageMembersModal(false)} className="text-gray-500 hover:text-gray-700"><FiX size={20} /></button>
-            </div>
-            <form
-              className="flex-1 overflow-y-auto p-0 flex flex-col"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!selectedChat) return;
-                if (!selectedChat.startsWith('demo-') && !DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
-                  const { data: current, error: err } = await supabase
-                    .from("chat_members")
-                    .select("user_id")
-                    .eq("chat_id", selectedChat);
-                  const currentMembers = (current || []).map((m: { user_id: string }) => m.user_id);
-                  const toAdd = chatMembers.filter(id => !currentMembers.includes(id));
-                  if (toAdd.length > 0) {
-                    await supabase.from("chat_members").insert(toAdd.map(id => ({ chat_id: selectedChat, user_id: id })));
-                  }
-                  const toRemove = currentMembers.filter(id => !chatMembers.includes(id));
-                  if (toRemove.length > 0) {
-                    await supabase.from("chat_members").delete().eq("chat_id", selectedChat).in("user_id", toRemove);
-                  }
-                  // Refetch member names for header
-                  const { data: members, error: err2 } = await supabase
-                    .from("chat_members")
-                    .select("user_id, users:user_id(name)")
-                    .eq("chat_id", selectedChat);
-                  if (!err2 && members) {
-                    const names = members.map((m: any) => Array.isArray(m.users) ? m.users[0]?.name : m.users?.name).filter(Boolean);
-                    setChatMemberNames(names);
-                  } else {
-                    setChatMemberNames([]);
-                  }
-                  // Refresh chat list
-                  if (currentUserId) {
-                    await fetchChats(currentUserId);
-                  }
-                }
-                setShowManageMembersModal(false);
-              }}
-            >
-              <div className="p-4 flex flex-col gap-2">
-                {allPossibleMembers.map(user => (
-                  <label
-                    key={user.id}
-                    className="flex items-start gap-3 cursor-pointer py-2 px-2 rounded hover:bg-gray-50 transition-all"
-                    style={{ alignItems: 'flex-start' }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={chatMembers.includes(user.id)}
-                      onChange={e => {
-                        setChatMembers(prev => e.target.checked ? [...prev, user.id] : prev.filter(id => id !== user.id));
-                      }}
-                      className="w-5 h-5 mt-1 accent-green-600"
-                    />
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-semibold text-sm truncate">{user.name}</span>
-                        {user.isDemo && <span className="ml-1 text-[10px] text-orange-400 bg-orange-50 px-1 py-0.5 rounded">Demo</span>}
-                      </div>
-                      <span className="text-xs text-gray-400 truncate">{user.email}</span>
+          <RightSidebar />
+                        </div>
                     </div>
-                  </label>
-                ))}
-              </div>
-              <div className="border-t border-gray-200 mt-2" />
-              <button type="submit" className="m-4 px-3 py-2 bg-green-600 text-white rounded text-base font-semibold">Save</button>
-            </form>
-          </div>
-        </div>
+      {!showNewChatModal && (
+                    <button
+          className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
+          onClick={() => setShowNewChatModal(true)}
+                    >
+          <RiChatAiLine size={22} />
+                    </button>
       )}
+      {/* Manage Members Modal */}
+      <ManageMembersModal
+        show={showManageMembersModal}
+        onClose={() => setShowManageMembersModal(false)}
+        allPossibleMembers={allPossibleMembers}
+        chatMembers={chatMembers}
+        setChatMembers={setChatMembers}
+        selectedChat={selectedChat}
+        currentUserId={currentUserId}
+        fetchChats={fetchChats}
+        setChatMemberNames={setChatMemberNames}
+        supabase={supabase}
+        DEMO_CONTACTS={DEMO_CONTACTS}
+      />
     </div>
   );
 }
