@@ -103,7 +103,7 @@ export default function ManageMembersModal({
                   type="checkbox"
                   checked={chatMembers.includes(user.id)}
                   onChange={e => {
-                    setChatMembers(prev => e.target.checked ? [...prev, user.id] : prev.filter(id => id !== user.id));
+                    setChatMembers((prev: string[]) => e.target.checked ? [...prev, user.id] : prev.filter(id => id !== user.id));
                   }}
                   className="w-5 h-5 mt-1 accent-green-600"
                 />
