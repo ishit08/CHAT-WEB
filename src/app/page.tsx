@@ -41,7 +41,6 @@ import { FaPhoneAlt } from "react-icons/fa";
 import { IoPersonCircle } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi";
 import { IoPersonCircleSharp } from "react-icons/io5";
-import { MdGroup } from "react-icons/md";
 import { IoPerson } from "react-icons/io5";
 
 type Chat = {
@@ -262,6 +261,17 @@ export default function Home() {
   const [attachmentsMap, setAttachmentsMap] = useState<Record<string, any[]>>({});
   const [uploading, setUploading] = useState(false);
   const [userMap, setUserMap] = useState<Record<string, { name: string; phone_number: string }>>({});
+  const [chatSearch, setChatSearch] = useState("");
+  const [isFiltered, setIsFiltered] = useState(false);
+  const [chatLabelsState, setChatLabelsState] = useState(CHAT_LABELS);
+  const [labelInput, setLabelInput] = useState<{[chatId: string]: string}>({});
+  const [showLabelInput, setShowLabelInput] = useState<{[chatId: string]: boolean}>({});
+  const labelInputRefs = useRef<{[chatId: string]: HTMLFormElement | null}>({});
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [chatSortOrder, setChatSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showManageMembersModal, setShowManageMembersModal] = useState(false);
+  const [chatMembers, setChatMembers] = useState<string[]>([]);
+  const [chatMemberNames, setChatMemberNames] = useState<string[]>([]);
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -674,6 +684,92 @@ export default function Home() {
     fetchChatUsers();
   }, [selectedChat]);
 
+  // Filter and Search Logic
+  const filteredChats = chats
+    .filter(chat => {
+      // Search logic
+      const searchMatch =
+        chat.name.toLowerCase().includes(chatSearch.toLowerCase()) ||
+        (chat.lastMessage && chat.lastMessage.toLowerCase().includes(chatSearch.toLowerCase())) ||
+        (CHAT_PHONES[chat.id] && CHAT_PHONES[chat.id].toLowerCase().includes(chatSearch.toLowerCase()));
+      return searchMatch;
+    })
+    .sort((a, b) => {
+      if (chatSortOrder === 'asc') {
+        return a.name.localeCompare(b.name);
+      } else {
+        return b.name.localeCompare(a.name);
+      }
+    });
+
+  // useEffect to close label input on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const anyOpen = Object.values(showLabelInput).some(Boolean);
+      if (!anyOpen) return;
+      let clickedInside = false;
+      Object.keys(showLabelInput).forEach(chatId => {
+        if (showLabelInput[chatId] && labelInputRefs.current[chatId]) {
+          if (labelInputRefs.current[chatId]?.contains(event.target as Node)) {
+            clickedInside = true;
+          }
+        }
+      });
+      if (!clickedInside) {
+        setShowLabelInput({});
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showLabelInput]);
+
+  // 2. Fetch chat members when modal opens or selectedChat changes
+  useEffect(() => {
+    async function fetchMembers() {
+      if (!selectedChat) return;
+      const { data, error } = await supabase
+        .from("chat_members")
+        .select("user_id")
+        .eq("chat_id", selectedChat);
+      if (!error && data) {
+        setChatMembers(data.map((m: { user_id: string }) => m.user_id));
+      }
+    }
+    if (showManageMembersModal) fetchMembers();
+  }, [showManageMembersModal, selectedChat]);
+
+  // 1. Merge demo users and database users for the modal
+  const allPossibleMembers = [
+    ...DEMO_CONTACTS.map(dc => ({ id: dc.id, name: dc.name, email: dc.name + '@demo.com', isDemo: true })),
+    ...users.filter(u => !DEMO_CONTACTS.some(dc => dc.id === u.id)).map(u => ({ ...u, isDemo: false }))
+  ];
+
+  // Add useEffect to fetch users when Manage Members modal is opened
+  useEffect(() => {
+    if (showManageMembersModal) {
+      fetchUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showManageMembersModal]);
+
+  // 2. Fetch and update chat member names after saving members or when selectedChat changes
+  useEffect(() => {
+    async function fetchMemberNames() {
+      if (!selectedChat) return;
+      const { data: members, error } = await supabase
+        .from("chat_members")
+        .select("user_id, users:user_id(name)")
+        .eq("chat_id", selectedChat);
+      if (!error && members) {
+        const names = members.map((m: any) => Array.isArray(m.users) ? m.users[0]?.name : m.users?.name).filter(Boolean);
+        setChatMemberNames(names);
+      } else {
+        setChatMemberNames([]);
+      }
+    }
+    fetchMemberNames();
+  }, [selectedChat]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -797,14 +893,40 @@ export default function Home() {
               <div className="flex items-center gap-x-2">
                 <div className="flex items-center bg-white border border-gray-300 px-1 py-0.5 rounded gap-x-1">
                   <svg width="8" height="8" fill="none" viewBox="0 0 24 24" className="w-2 h-2 text-gray-700"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <input className="bg-transparent outline-none text-xs text-gray-700 placeholder-gray-700 w-10" placeholder="Search" onClick={() => setShowNewChatModal(true)} />
+                  <input
+                    className="bg-transparent outline-none text-xs text-gray-700 placeholder-gray-700 w-10"
+                    placeholder="Search"
+                    value={chatSearch}
+                    onChange={e => setChatSearch(e.target.value)}
+                  />
                 </div>
                 <div className="relative bg-white border border-gray-300 px-1 py-0.5 rounded flex items-center ml-1">
-                  <button className="flex items-center gap-1 font-semibold bg-white border-none p-0 text-xs" style={{ color: '#199455' }}>
+                  <button
+                    className="flex items-center gap-1 font-semibold bg-white border-none p-0 text-xs"
+                    style={{ color: '#199455' }}
+                    onClick={() => setShowFilterDropdown(v => !v)}
+                    type="button"
+                  >
                     <IoFilterSharp className="w-2.5 h-2.5" style={{ color: '#199455' }} />
                     Filtered
                   </button>
-                  <span className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center rounded-full text-base cursor-pointer" style={{ background: '#5BA16F', color: 'white' }}>×</span>
+                  {showFilterDropdown && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow z-50 text-xs">
+                      <button
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${chatSortOrder === 'asc' ? 'font-bold text-green-600' : ''}`}
+                        onClick={() => { setChatSortOrder('asc'); setShowFilterDropdown(false); }}
+                      >A-Z</button>
+                      <button
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${chatSortOrder === 'desc' ? 'font-bold text-green-600' : ''}`}
+                        onClick={() => { setChatSortOrder('desc'); setShowFilterDropdown(false); }}
+                      >Z-A</button>
+                    </div>
+                  )}
+                  <span
+                    className="absolute -top-1 -right-2 w-3 h-3 flex items-center justify-center rounded-full text-base cursor-pointer"
+                    style={{ background: '#5BA16F', color: 'white' }}
+                    onClick={() => { setShowFilterDropdown(false); setChatSortOrder('asc'); }}
+                  >×</span>
                 </div>
               </div>
             </div>
@@ -859,10 +981,10 @@ export default function Home() {
             {/* Chat list: independently scrollable, fixed height below filter/search bar */}
             <div className="border-r border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                  style={{ height: 'calc(100vh - 48px - 48px)', overflowY: 'auto' }}>
-              {chats.map((chat) => {
+              {filteredChats.map((chat) => {
                 const isGroup = GROUP_CHAT_IDS.includes(chat.id);
-                const chatLabels = CHAT_LABELS[chat.id]?.labels || [];
-                const chatNumbers = CHAT_LABELS[chat.id]?.numbers || [];
+                const chatLabels = chatLabelsState[chat.id]?.labels || [];
+                const chatNumbers = chatLabelsState[chat.id]?.numbers || [];
                 const phone = CHAT_PHONES[chat.id] || "";
                 // Blue double tick for these chats
                 const blueTickIds = ["Yasin-3", "Skope-Demo", "demo-demo15"];
@@ -877,7 +999,7 @@ export default function Home() {
                     {/* Avatar: show profile image if available, else fallback to initial */}
                     {["Test Skope Final 5", "Test El Centro", "Testing group"].includes(chat.name) ? (
                       <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
-                        <MdGroup size={22} className="text-white" />
+                        <MdGroups size={22} className="text-white" />
                       </div>
                     ) : chat.name === "+91 9999999999" ? (
                       <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: '#e3e6ea' }}>
@@ -922,6 +1044,45 @@ export default function Home() {
                           {chatLabels.map((label) => (
                             <span key={label} className={`px-1 py-0.5 rounded text-[10px] font-semibold ${label === 'Demo' ? 'bg-orange-100 text-orange-500' : label === 'internal' ? 'bg-green-100 text-green-600' : label === 'Signup' ? 'bg-green-100 text-green-600' : label === 'Content' ? 'bg-green-100 text-green-600' : label === 'Dont Send' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-500'}`}>{label}</span>
                           ))}
+                          {/* Add label button and input */}
+                          <button
+                            className="ml-1 text-green-600 text-xs"
+                            onClick={e => {
+                              e.stopPropagation();
+                              setShowLabelInput(prev => ({ ...prev, [chat.id]: true }));
+                            }}
+                            tabIndex={-1}
+                            type="button"
+                          >+
+                          </button>
+                          {showLabelInput[chat.id] && (
+                            <form
+                              ref={el => { labelInputRefs.current[chat.id] = el; }}
+                              onSubmit={e => {
+                                e.preventDefault();
+                                if (labelInput[chat.id]?.trim()) {
+                                  setChatLabelsState(prev => ({
+                                    ...prev,
+                                    [chat.id]: {
+                                      ...prev[chat.id],
+                                      labels: [...(prev[chat.id]?.labels || []), labelInput[chat.id].trim()]
+                                    }
+                                  }));
+                                  setLabelInput(prev => ({ ...prev, [chat.id]: "" }));
+                                  setShowLabelInput(prev => ({ ...prev, [chat.id]: false }));
+                                }
+                              }}
+                              className="inline"
+                            >
+                              <input
+                                className="border px-1 text-xs rounded w-16"
+                                value={labelInput[chat.id] || ""}
+                                onChange={e => setLabelInput(prev => ({ ...prev, [chat.id]: e.target.value }))}
+                                autoFocus
+                                onClick={e => e.stopPropagation()}
+                              />
+                            </form>
+                          )}
                           {/* Render numbers */}
                           {chatNumbers.map((num) => (
                             <span key={num} className="text-[10px] font-bold text-gray-500">{num}</span>
@@ -947,7 +1108,7 @@ export default function Home() {
               <div className="flex items-center gap-1">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: (selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro") ? '#e3e6ea' : '#f1f4f6' }}>
                   {selectedChat && chats.find(c => c.id === selectedChat)?.name === "Test El Centro" ? (
-                    <MdGroup size={16} className="text-white" />
+                    <MdGroups size={16} className="text-white" />
                   ) : selectedChat && chats.find(c => c.id === selectedChat)?.name === "+91 9999999999" ? (
                     <IoPerson size={20} className="text-white" />
                   ) : (
@@ -961,9 +1122,11 @@ export default function Home() {
                     {selectedChat ? chats.find(c => c.id === selectedChat)?.name : "Select a chat"}
                   </div>
                   <div className="text-xs text-gray-500 leading-none">
-                    {selectedChat === "Test-El-Centro"
-                      ? "Roshnag Airtel, Roshnag Jio, Bharat Kumar Ramesh, Periskope"
-                      : "Online"}
+                    {chatMemberNames.length > 2
+                      ? chatMemberNames.join(", ")
+                      : (selectedChat === "Test-El-Centro"
+                          ? "Roshnag Airtel, Roshnag Jio, Bharat Kumar Ramesh, Periskope"
+                          : "Online")}
                   </div>
                 </div>
               </div>
@@ -985,6 +1148,12 @@ export default function Home() {
                 )}
                 <button className="text-gray-400 hover:text-green-500"><HiSparkles size={20} /></button>
                 <button className="text-gray-400 hover:text-green-500"><FiSearch size={16} /></button>
+                <button
+                  className="ml-2 px-2 py-1 border border-gray-300 rounded text-xs text-gray-600 hover:bg-gray-100"
+                  onClick={() => setShowManageMembersModal(true)}
+                >
+                  Manage Members
+                </button>
               </div>
             </div>
             {/* Messages area */}
@@ -1171,10 +1340,10 @@ export default function Home() {
               <DiHtml5Connectivity size={18} />
             </button>
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <FaAt size={18} />
+              <MdGroups size={18} />
             </button>
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
-              <MdGroups size={18} />
+              <FaAt size={18} />
             </button>
             <button className="w-10 h-10 flex items-center justify-center text-[#A0A4AB] hover:text-green-500 transition-colors duration-150">
               <RiFolderImageFill size={18} />
@@ -1183,13 +1352,93 @@ export default function Home() {
               <RiListSettingsLine size={18} />
             </button>
             {!showNewChatModal && (
-              <button className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg">
+              <button
+                className="fixed bottom-8 left-[360px] z-50 bg-green-600 hover:bg-green-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
+                onClick={() => setShowNewChatModal(true)}
+              >
                 <RiChatAiLine size={22} />
               </button>
             )}
           </aside>
         </div>
       </div>
+      {/* Manage Members Modal */}
+      {showManageMembersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-[400px] max-h-[600px] flex flex-col">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Manage Members</h2>
+              <button onClick={() => setShowManageMembersModal(false)} className="text-gray-500 hover:text-gray-700"><FiX size={20} /></button>
+            </div>
+            <form
+              className="flex-1 overflow-y-auto p-0 flex flex-col"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!selectedChat) return;
+                if (!selectedChat.startsWith('demo-') && !DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
+                  const { data: current, error: err } = await supabase
+                    .from("chat_members")
+                    .select("user_id")
+                    .eq("chat_id", selectedChat);
+                  const currentMembers = (current || []).map((m: { user_id: string }) => m.user_id);
+                  const toAdd = chatMembers.filter(id => !currentMembers.includes(id));
+                  if (toAdd.length > 0) {
+                    await supabase.from("chat_members").insert(toAdd.map(id => ({ chat_id: selectedChat, user_id: id })));
+                  }
+                  const toRemove = currentMembers.filter(id => !chatMembers.includes(id));
+                  if (toRemove.length > 0) {
+                    await supabase.from("chat_members").delete().eq("chat_id", selectedChat).in("user_id", toRemove);
+                  }
+                  // Refetch member names for header
+                  const { data: members, error: err2 } = await supabase
+                    .from("chat_members")
+                    .select("user_id, users:user_id(name)")
+                    .eq("chat_id", selectedChat);
+                  if (!err2 && members) {
+                    const names = members.map((m: any) => Array.isArray(m.users) ? m.users[0]?.name : m.users?.name).filter(Boolean);
+                    setChatMemberNames(names);
+                  } else {
+                    setChatMemberNames([]);
+                  }
+                  // Refresh chat list
+                  if (currentUserId) {
+                    await fetchChats(currentUserId);
+                  }
+                }
+                setShowManageMembersModal(false);
+              }}
+            >
+              <div className="p-4 flex flex-col gap-2">
+                {allPossibleMembers.map(user => (
+                  <label
+                    key={user.id}
+                    className="flex items-start gap-3 cursor-pointer py-2 px-2 rounded hover:bg-gray-50 transition-all"
+                    style={{ alignItems: 'flex-start' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={chatMembers.includes(user.id)}
+                      onChange={e => {
+                        setChatMembers(prev => e.target.checked ? [...prev, user.id] : prev.filter(id => id !== user.id));
+                      }}
+                      className="w-5 h-5 mt-1 accent-green-600"
+                    />
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-semibold text-sm truncate">{user.name}</span>
+                        {user.isDemo && <span className="ml-1 text-[10px] text-orange-400 bg-orange-50 px-1 py-0.5 rounded">Demo</span>}
+                      </div>
+                      <span className="text-xs text-gray-400 truncate">{user.email}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="border-t border-gray-200 mt-2" />
+              <button type="submit" className="m-4 px-3 py-2 bg-green-600 text-white rounded text-base font-semibold">Save</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
