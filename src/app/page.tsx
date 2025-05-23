@@ -453,7 +453,6 @@ export default function Home() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setUploading(true); // Pause polling immediately when file is selected
       const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
       const ALLOWED_TYPES = [
         'image/jpeg', 'image/png', 'image/gif',
@@ -462,12 +461,10 @@ export default function Home() {
       ];
       if (file.size > MAX_FILE_SIZE) {
         alert('File is too large. Maximum size is 50MB.');
-        setUploading(false);
         return;
       }
       if (!ALLOWED_TYPES.includes(file.type)) {
         alert('File type not allowed.');
-        setUploading(false);
         return;
       }
       setAttachment(file);
