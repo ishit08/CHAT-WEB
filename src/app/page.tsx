@@ -257,6 +257,8 @@ export default function Home() {
   const [demoMessages, setDemoMessages] = useState<Record<string, Message[]>>(DEMO_MESSAGES);
   const [attachment, setAttachment] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachmentsMap, setAttachmentsMap] = useState<Record<string, any[]>>({});
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -377,9 +379,10 @@ export default function Home() {
   const fetchMessages = useCallback(async (chatId: string) => {
     if (chatId.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === chatId)) {
       setMessages(demoMessages[chatId] || []);
+      setAttachmentsMap({});
       return;
     }
-    const { data, error } = await supabase
+    const { data: messages, error } = await supabase
       .from("messages")
       .select("*")
       .eq("chat_id", chatId)
@@ -388,7 +391,29 @@ export default function Home() {
       console.error("Error fetching messages:", error);
       return;
     }
-    setMessages(data);
+    setMessages(messages);
+    // Fetch attachments for these messages
+    const messageIds = messages.map((msg: any) => msg.id);
+    if (messageIds.length > 0) {
+      const { data: attachments, error: attError } = await supabase
+        .from("attachments")
+        .select("*")
+        .in("message_id", messageIds);
+      if (attError) {
+        console.error("Error fetching attachments:", attError);
+        setAttachmentsMap({});
+      } else {
+        // Map message_id to array of attachments
+        const map: Record<string, any[]> = {};
+        for (const att of attachments) {
+          if (!map[att.message_id]) map[att.message_id] = [];
+          map[att.message_id].push(att);
+        }
+        setAttachmentsMap(map);
+      }
+    } else {
+      setAttachmentsMap({});
+    }
   }, [demoMessages]);
 
   useEffect(() => {
@@ -413,16 +438,33 @@ export default function Home() {
 
   // Remove the polling mechanism since we're handling demo messages differently
   useEffect(() => {
-    if (!selectedChat || selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) return;
+    if (!selectedChat || uploading || selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) return;
     const interval = setInterval(() => {
       fetchMessages(selectedChat);
-    }, 2000); // Poll every 2 seconds
+    }, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [selectedChat]);
+  }, [selectedChat, uploading, fetchMessages]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setUploading(true); // Pause polling immediately when file is selected
+      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+      const ALLOWED_TYPES = [
+        'image/jpeg', 'image/png', 'image/gif',
+        'application/pdf', 'text/plain',
+        'video/mp4', 'video/webm', 'video/ogg'
+      ];
+      if (file.size > MAX_FILE_SIZE) {
+        alert('File is too large. Maximum size is 50MB.');
+        setUploading(false);
+        return;
+      }
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        alert('File type not allowed.');
+        setUploading(false);
+        return;
+      }
       setAttachment(file);
     }
   };
@@ -430,15 +472,10 @@ export default function Home() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !attachment) || !selectedChat || !currentUserId) return;
-
-    let attachmentUrl = '';
-    if (attachment) {
-      // For demo purposes, we'll create a fake URL
-      attachmentUrl = URL.createObjectURL(attachment);
-    }
+    setUploading(true);
 
     if (selectedChat.startsWith("demo-") || DEMO_CONTACTS.some(chat => chat.id === selectedChat)) {
-      // Handle demo chat messages
+      // Handle demo chat messages (no upload)
       const newDemoMessage: Message = {
         id: Date.now().toString(),
         content: newMessage,
@@ -448,17 +485,14 @@ export default function Home() {
           attachment: {
             name: attachment.name,
             type: attachment.type,
-            url: attachmentUrl
+            url: URL.createObjectURL(attachment)
           }
         })
       };
-
       setDemoMessages(prev => ({
         ...prev,
         [selectedChat]: [...(prev[selectedChat] || []), newDemoMessage]
       }));
-
-      // Update the last message in the chat list
       setChats(prev => prev.map(chat => {
         if (chat.id === selectedChat) {
           return {
@@ -470,24 +504,60 @@ export default function Home() {
         return chat;
       }));
     } else {
-      // Handle real chat messages
-      const { error } = await supabase.from("messages").insert({
-        chat_id: selectedChat,
-        sender_id: currentUserId,
-        content: newMessage,
-        attachment: attachment ? {
-          name: attachment.name,
-          type: attachment.type,
-          url: attachmentUrl
-        } : null
-      });
-      if (error) {
-        console.error("Error sending message:", error);
+      // Handle real chat messages with attachment upload
+      let messageId = null;
+      // 1. Create the message first
+      const { data: messageData, error: messageError } = await supabase
+        .from("messages")
+        .insert({
+          chat_id: selectedChat,
+          sender_id: currentUserId,
+          content: newMessage,
+          has_attachments: !!attachment
+        })
+        .select()
+        .single();
+      if (messageError) {
+        console.error("Error sending message:", messageError);
         return;
+      }
+      messageId = messageData.id;
+      // 2. If there is an attachment, upload it
+      if (attachment) {
+        // Sanitize file name for Supabase Storage
+        const safeFileName = attachment.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+        const filePath = `${messageId}/${safeFileName}`;
+        const { data: fileData, error: uploadError } = await supabase.storage
+          .from('attachments')
+          .upload(filePath, attachment);
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          return;
+        }
+        // 3. Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('attachments')
+          .getPublicUrl(filePath);
+        // 4. Insert into attachments table
+        const { error: dbError } = await supabase
+          .from('attachments')
+          .insert({
+            message_id: messageId,
+            file_name: attachment.name,
+            file_type: attachment.type,
+            file_size: attachment.size,
+            file_url: publicUrl,
+            created_at: new Date().toISOString()
+          });
+        if (dbError) {
+          console.error('Error saving attachment metadata:', dbError);
+        }
+        // 5. Update message to indicate it has attachments (already set above)
       }
     }
     setNewMessage("");
     setAttachment(null);
+    setUploading(false); // Resume polling after upload
   };
 
   const fetchUsers = async () => {
@@ -901,20 +971,39 @@ export default function Home() {
                     className={`self-${message.sender_id === currentUserId ? "end" : "start"} max-w-[60%]`}
                   >
                     <div className={`rounded-lg px-4 py-2 shadow text-gray-900 ${message.sender_id === currentUserId ? "bg-green-100" : "bg-white"}`}>
-                      {message.attachment && (
+                      {attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 && (
                         <div className="mb-2">
-                          <a
-                            href={message.attachment.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
-                          >
-                            <FiPaperclip size={16} />
-                            <span className="text-sm">{message.attachment.name}</span>
-                          </a>
+                          {attachmentsMap[message.id].map(att => (
+                            att.file_type && att.file_type.startsWith('image/') ? (
+                              <img
+                                key={att.id}
+                                src={att.file_url}
+                                alt={att.file_name}
+                                className="mb-1 max-w-xs rounded border"
+                                style={{ maxHeight: 200 }}
+                              />
+                            ) : att.file_type && att.file_type.startsWith('video/') ? (
+                              <video key={att.id} controls width="250" className="mb-1">
+                                <source src={att.file_url} type={att.file_type} />
+                                Your browser does not support the video tag.
+                              </video>
+                            ) : (
+                              <a
+                                key={att.id}
+                                href={att.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-1"
+                              >
+                                <FiPaperclip size={16} />
+                                <span className="text-sm">{att.file_name}</span>
+                              </a>
+                            )
+                          ))}
                         </div>
                       )}
-                      {message.content}
+                      {/* Show content or a placeholder if content is empty and there are attachments */}
+                      {message.content || (attachmentsMap[message.id] && attachmentsMap[message.id].length > 0 ? <span className="italic text-gray-400">Sent an attachment</span> : null)}
                     </div>
                     <div className={`text-xs text-gray-500 mt-1 ${message.sender_id === currentUserId ? "text-right" : ""}`}>
                       {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -956,6 +1045,7 @@ export default function Home() {
                   ref={fileInputRef}
                   onChange={handleFileSelect}
                   className="hidden"
+                  accept="image/*,video/*,.pdf,.txt"
                 />
                 <button 
                   type="button" 
